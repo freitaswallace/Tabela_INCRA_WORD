@@ -67,8 +67,8 @@ class MemorialGUI_V2:
         self.table_data = None
 
         # Checkboxes para saída
-        self.gerar_excel = BooleanVar(value=True)
-        self.gerar_word = BooleanVar(value=True)
+        self.gerar_excel = BooleanVar(value=False)
+        self.gerar_word = BooleanVar(value=False)
 
         # API Key fixa
         self.api_key.set('AIzaSyAdA_GO7cQ0m1ouie4wGwXf4a4SnHKjBh8')
@@ -149,6 +149,10 @@ class MemorialGUI_V2:
                        borderwidth=0,
                        padding=(20, 10))
 
+        style.map('Success.TButton',
+                 background=[('active', self.colors['success'])],
+                 foreground=[('active', 'white')])
+
         style.configure('Secondary.TButton',
                        font=(font_family, 11),
                        background=self.colors['bg_secondary'],
@@ -161,8 +165,9 @@ class MemorialGUI_V2:
                        background=self.colors['card_bg'])
 
         style.configure('TCheckbutton',
-                       font=(font_family, 12),
-                       background=self.colors['card_bg'])
+                       font=(font_family, 13, 'bold'),
+                       background=self.colors['card_bg'],
+                       foreground=self.colors['text'])
         
     def create_widgets(self):
         """Cria todos os widgets da interface - Design Profissional"""
@@ -420,13 +425,15 @@ class MemorialGUI_V2:
         self.btn_abrir_excel = ttk.Button(results_buttons,
                                          text="📊  Abrir Tabela Excel",
                                          command=self.abrir_excel,
-                                         style='Success.TButton')
+                                         style='Success.TButton',
+                                         cursor='hand2')
         self.btn_abrir_excel.pack(side=LEFT, padx=(0, 15), ipady=10, ipadx=20)
 
         self.btn_abrir_word = ttk.Button(results_buttons,
                                         text="📝  Abrir Documento Word",
                                         command=self.abrir_word,
-                                        style='Success.TButton')
+                                        style='Success.TButton',
+                                        cursor='hand2')
         self.btn_abrir_word.pack(side=LEFT, ipady=10, ipadx=20)
         
     def setup_drag_drop(self):

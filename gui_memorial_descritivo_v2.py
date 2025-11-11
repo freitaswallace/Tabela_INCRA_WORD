@@ -221,7 +221,7 @@ class MemorialGUI_V2:
         subtitle_label = Label(header_frame,
                               text="Sistema Profissional de Processamento Automatizado",
                               font=('Segoe UI', 13),
-                              fg=self.colors['text_light'],
+                              fg=self.colors['text_secondary'],
                               bg=self.colors['bg'])
         subtitle_label.pack(anchor=CENTER, pady=(8, 0))
 
@@ -249,7 +249,7 @@ class MemorialGUI_V2:
         modo_subtitle = Label(modo_inner,
                              text="Selecione como deseja processar o memorial descritivo:",
                              font=('Segoe UI', 12),
-                             fg=self.colors['text_light'],
+                             fg=self.colors['text_secondary'],
                              bg=self.colors['bg_card'])
         modo_subtitle.pack(anchor=W, pady=(0, 20))
 

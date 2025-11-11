@@ -230,11 +230,11 @@ class MemorialGUI_V2:
         separator1.pack(fill=X, pady=25)
         
         # ===== SEÇÃO 1: MODO DE OPERAÇÃO =====
-        modo_card = Frame(main_frame, bg=self.colors['bg_card'], relief=FLAT, bd=0)
+        modo_card = Frame(main_frame, bg=self.colors['card_bg'], relief=FLAT, bd=0)
         modo_card.pack(fill=X, pady=(0, 20))
 
         # Padding interno do card
-        modo_inner = Frame(modo_card, bg=self.colors['bg_card'], padx=30, pady=25)
+        modo_inner = Frame(modo_card, bg=self.colors['card_bg'], padx=30, pady=25)
         modo_inner.pack(fill=BOTH, expand=True)
 
         # Título da seção
@@ -242,7 +242,7 @@ class MemorialGUI_V2:
                           text="🎯  Modo de Operação",
                           font=('Segoe UI', 18, 'bold'),
                           fg=self.colors['primary'],
-                          bg=self.colors['bg_card'])
+                          bg=self.colors['card_bg'])
         modo_title.pack(anchor=W, pady=(0, 8))
 
         # Subtítulo da seção
@@ -250,7 +250,7 @@ class MemorialGUI_V2:
                              text="Selecione como deseja processar o memorial descritivo:",
                              font=('Segoe UI', 12),
                              fg=self.colors['text_secondary'],
-                             bg=self.colors['bg_card'])
+                             bg=self.colors['card_bg'])
         modo_subtitle.pack(anchor=W, pady=(0, 20))
 
         # Opções

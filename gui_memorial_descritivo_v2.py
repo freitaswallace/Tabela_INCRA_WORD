@@ -51,10 +51,10 @@ class MemorialGUI_V2:
     
     def __init__(self, root):
         self.root = root
-        self.root.title("Memorial Descritivo INCRA - Processador Profissional")
-        self.root.geometry("1400x950")
+        self.root.title("Memorial Descritivo INCRA")
+        self.root.geometry("1100x800")
         self.root.resizable(True, True)
-        self.root.configure(bg='#ECF0F1')
+        self.root.configure(bg='#FFFFFF')
         
         # Variáveis
         self.pdf_path = StringVar()
@@ -76,6 +76,9 @@ class MemorialGUI_V2:
         # Caminhos dos arquivos gerados
         self.excel_gerado = None
         self.word_gerado = None
+
+        # Caminhos dos arquivos temporários para deletar
+        self.arquivos_temporarios = []
         
         # Configurar estilo
         self.setup_style()
@@ -87,81 +90,79 @@ class MemorialGUI_V2:
         self.setup_drag_drop()
     
     def setup_style(self):
-        """Configura o estilo visual da interface - Profissional e Acessível"""
+        """Configura estilo moderno e minimalista"""
         style = ttk.Style()
         style.theme_use('clam')
 
-        # Paleta profissional: Azul e Cinza
+        # Paleta moderna inspirada em VSCode e Slack
         self.colors = {
-            'primary': '#2C3E50',      # Azul escuro (títulos)
-            'secondary': '#3498DB',    # Azul médio (botões principais)
-            'success': '#27AE60',      # Verde profissional
-            'danger': '#E74C3C',       # Vermelho profissional
-            'warning': '#F39C12',      # Laranja profissional
-            'info': '#3498DB',         # Azul informativo
-            'bg_main': '#ECF0F1',      # Cinza muito claro (fundo)
-            'bg_card': '#FFFFFF',      # Branco (cards)
-            'text': '#2C3E50',         # Texto escuro
-            'text_light': '#7F8C8D',   # Texto claro
-            'border': '#BDC3C7'        # Borda cinza
+            'primary': '#5865F2',      # Azul vibrante (Discord-style)
+            'primary_hover': '#4752C4',
+            'success': '#3BA55D',      # Verde moderno
+            'bg': '#FFFFFF',           # Branco puro
+            'bg_secondary': '#F7F8FA', # Cinza muito claro
+            'text': '#2E3338',         # Cinza escuro (quase preto)
+            'text_secondary': '#5E6C84', # Cinza médio
+            'border': '#E3E5E8',       # Borda sutil
+            'card_bg': '#FFFFFF',
+            'sidebar': '#F7F8FA'
         }
 
-        # Fontes GRANDES para acessibilidade
+        # Fonte moderna
+        font_family = 'Inter' if 'Inter' in self.root.tk.call('font', 'families') else 'Segoe UI'
+
         style.configure('Title.TLabel',
-                       font=('Segoe UI', 28, 'bold'),
-                       foreground=self.colors['primary'],
-                       background=self.colors['bg_main'])
+                       font=(font_family, 22, 'bold'),
+                       foreground=self.colors['text'],
+                       background=self.colors['bg'])
 
         style.configure('Subtitle.TLabel',
-                       font=('Segoe UI', 14),
-                       foreground=self.colors['text_light'],
-                       background=self.colors['bg_main'])
+                       font=(font_family, 11),
+                       foreground=self.colors['text_secondary'],
+                       background=self.colors['bg'])
 
-        style.configure('SectionTitle.TLabel',
-                       font=('Segoe UI', 16, 'bold'),
-                       foreground=self.colors['primary'])
+        style.configure('CardTitle.TLabel',
+                       font=(font_family, 14, 'bold'),
+                       foreground=self.colors['text'],
+                       background=self.colors['card_bg'])
 
-        style.configure('Status.TLabel',
-                       font=('Segoe UI', 13, 'bold'),
-                       foreground=self.colors['text'])
+        style.configure('Body.TLabel',
+                       font=(font_family, 11),
+                       foreground=self.colors['text'],
+                       background=self.colors['card_bg'])
 
         style.configure('Primary.TButton',
-                       font=('Segoe UI', 16, 'bold'),
-                       padding=20,
-                       background=self.colors['secondary'])
+                       font=(font_family, 12, 'bold'),
+                       background=self.colors['primary'],
+                       foreground='white',
+                       borderwidth=0,
+                       focuscolor='none',
+                       padding=(30, 15))
+
+        style.map('Primary.TButton',
+                 background=[('active', self.colors['primary_hover'])])
 
         style.configure('Success.TButton',
-                       font=('Segoe UI', 14, 'bold'),
-                       padding=15,
-                       background=self.colors['success'])
+                       font=(font_family, 11),
+                       background=self.colors['success'],
+                       foreground='white',
+                       borderwidth=0,
+                       padding=(20, 10))
 
-        style.configure('Big.TButton',
-                       font=('Segoe UI', 14, 'bold'),
-                       padding=15)
-
-        style.configure('TLabel',
-                       font=('Segoe UI', 13),
-                       background=self.colors['bg_card'])
-
-        style.configure('TCheckbutton',
-                       font=('Segoe UI', 15, 'bold'),
-                       background=self.colors['bg_card'])
+        style.configure('Secondary.TButton',
+                       font=(font_family, 11),
+                       background=self.colors['bg_secondary'],
+                       foreground=self.colors['text'],
+                       borderwidth=1,
+                       padding=(20, 10))
 
         style.configure('TRadiobutton',
-                       font=('Segoe UI', 15, 'bold'),
-                       background=self.colors['bg_card'])
+                       font=(font_family, 12),
+                       background=self.colors['card_bg'])
 
-        style.configure('Card.TFrame',
-                       background=self.colors['bg_card'])
-
-        style.configure('TLabelframe',
-                       background=self.colors['bg_card'],
-                       bordercolor=self.colors['border'])
-
-        style.configure('TLabelframe.Label',
-                       font=('Segoe UI', 14, 'bold'),
-                       foreground=self.colors['primary'],
-                       background=self.colors['bg_card'])
+        style.configure('TCheckbutton',
+                       font=(font_family, 12),
+                       background=self.colors['card_bg'])
         
     def create_widgets(self):
         """Cria todos os widgets da interface - Design Profissional"""
@@ -551,6 +552,29 @@ class MemorialGUI_V2:
         # Scroll para mostrar os botões
         self.canvas.yview_moveto(1.0)
 
+    def limpar_arquivos_temporarios(self):
+        """
+        Remove arquivos temporários (.tif e .pdf convertido)
+        Mantém apenas os arquivos finais (.xlsx e .docx)
+        """
+        if not self.arquivos_temporarios:
+            return
+
+        self.log("🗑️ Limpando arquivos temporários...", 'info')
+
+        for arquivo in self.arquivos_temporarios:
+            try:
+                if os.path.exists(arquivo):
+                    os.remove(arquivo)
+                    nome_arquivo = Path(arquivo).name
+                    self.log(f"  ✓ Removido: {nome_arquivo}", 'info')
+            except Exception as e:
+                self.log(f"  ⚠️ Erro ao remover {Path(arquivo).name}: {e}", 'warning')
+
+        # Limpa a lista
+        self.arquivos_temporarios = []
+        self.log("✅ Arquivos temporários removidos!", 'success')
+
     def log(self, message, tag='info'):
         """Adiciona mensagem ao log"""
         self.log_text.insert(END, f"{message}\n", tag)
@@ -660,15 +684,21 @@ class MemorialGUI_V2:
                 
                 self.log(f"✅ Arquivo encontrado!", 'success')
                 
-                self.update_progress(20, "Copiando para Downloads...")
+                self.update_progress(20, "Copiando para Documentos...")
                 arquivo_local = copiar_para_downloads(arquivo_tiff, prenotacao_formatada)
                 self.log(f"📁 Copiado para: {arquivo_local.parent.name}", 'success')
-                
+
+                # Registra arquivo .tif para deletar depois
+                self.arquivos_temporarios.append(str(arquivo_local))
+
                 self.update_progress(30, "Convertendo TIFF → PDF...")
                 self.log("🔄 Convertendo TIFF para PDF...", 'info')
                 pdf_path = converter_tiff_para_pdf(arquivo_local)
                 self.log(f"✅ PDF criado", 'success')
-                
+
+                # Registra arquivo .pdf para deletar depois
+                self.arquivos_temporarios.append(str(pdf_path))
+
                 self.update_progress(40, "Extraindo dados...")
                 self.log("📊 Extraindo Memorial do INCRA...", 'incra')
                 self.table_data = extrair_memorial_incra(pdf_path, api_key)
@@ -704,6 +734,10 @@ class MemorialGUI_V2:
                 self.word_gerado = str(word_path)  # Salva caminho
                 arquivos_gerados.append(f"📝 {word_path.name}")
                 self.log(f"✅ Word: {word_path.name}", 'success')
+
+            # Limpa arquivos temporários (.tif e .pdf)
+            if self.arquivos_temporarios:
+                self.limpar_arquivos_temporarios()
 
             self.update_progress(100, "Concluído!")
             self.log("="*50, 'success')

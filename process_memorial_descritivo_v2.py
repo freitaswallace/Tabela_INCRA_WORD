@@ -849,17 +849,10 @@ def main():
     print("🚀 PROCESSADOR DE MEMORIAL DESCRITIVO")
     print("="*70)
     
-    # Configurar API Key
+    # Configurar API Key (fixa)
     print("\n🔑 Configuração da API do Google Gemini")
-    api_key = input("Digite sua chave da API (ou Enter para usar variável de ambiente): ").strip()
-    
-    if not api_key:
-        api_key = os.environ.get('GEMINI_API_KEY')
-        if not api_key:
-            print("\n❌ Erro: Chave da API não configurada!")
-            print("Configure a variável de ambiente GEMINI_API_KEY ou digite a chave.")
-            sys.exit(1)
-        print(f"✅ Usando chave da variável de ambiente")
+    api_key = 'AIzaSyAdA_GO7cQ0m1ouie4wGwXf4a4SnHKjBh8'
+    print(f"✅ Usando chave configurada")
     
     # Escolher modo de operação
     print("\n" + "="*70)

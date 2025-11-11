@@ -49,9 +49,10 @@ class MemorialGUI_V2:
     
     def __init__(self, root):
         self.root = root
-        self.root.title("Processador de Memorial Descritivo v2.0")
-        self.root.geometry("900x700")
+        self.root.title("Processador de Memorial Descritivo")
+        self.root.geometry("1200x900")
         self.root.resizable(True, True)
+        self.root.configure(bg='#F0F0F0')
         
         # Variáveis
         self.pdf_path = StringVar()
@@ -62,15 +63,13 @@ class MemorialGUI_V2:
         self.progress_value = IntVar(value=0)
         self.processing = False
         self.table_data = None
-        
+
         # Checkboxes para saída
         self.gerar_excel = BooleanVar(value=True)
         self.gerar_word = BooleanVar(value=True)
-        
-        # Tenta carregar API Key do ambiente
-        env_key = os.environ.get('GEMINI_API_KEY', '')
-        if env_key:
-            self.api_key.set(env_key)
+
+        # API Key fixa
+        self.api_key.set('AIzaSyAdA_GO7cQ0m1ouie4wGwXf4a4SnHKjBh8')
         
         # Configurar estilo
         self.setup_style()
@@ -82,218 +81,211 @@ class MemorialGUI_V2:
         self.setup_drag_drop()
     
     def setup_style(self):
-        """Configura o estilo visual da interface"""
+        """Configura o estilo visual da interface - Acessível para idosos"""
         style = ttk.Style()
         style.theme_use('clam')
-        
+
         self.colors = {
-            'primary': '#2196F3',
-            'success': '#4CAF50',
-            'danger': '#F44336',
-            'warning': '#FF9800',
-            'incra': '#8E24AA',
-            'bg': '#F5F5F5',
-            'text': '#212121',
-            'border': '#E0E0E0'
+            'primary': '#0066CC',      # Azul mais escuro
+            'success': '#228B22',      # Verde mais escuro
+            'danger': '#CC0000',       # Vermelho mais escuro
+            'warning': '#FF8C00',      # Laranja mais escuro
+            'incra': '#6A1B9A',        # Roxo mais escuro
+            'bg': '#FFFFFF',           # Branco puro
+            'text': '#000000',         # Preto puro
+            'border': '#333333'        # Cinza escuro
         }
-        
-        style.configure('Title.TLabel', font=('Segoe UI', 16, 'bold'), foreground=self.colors['primary'])
-        style.configure('Subtitle.TLabel', font=('Segoe UI', 10), foreground='gray')
-        style.configure('Status.TLabel', font=('Segoe UI', 10), foreground=self.colors['text'])
-        style.configure('Primary.TButton', font=('Segoe UI', 10, 'bold'))
+
+        # Fontes GRANDES para acessibilidade
+        style.configure('Title.TLabel', font=('Arial', 24, 'bold'), foreground=self.colors['primary'])
+        style.configure('Subtitle.TLabel', font=('Arial', 16), foreground='#000000')
+        style.configure('Status.TLabel', font=('Arial', 14, 'bold'), foreground=self.colors['text'])
+        style.configure('Primary.TButton', font=('Arial', 18, 'bold'), padding=20)
+        style.configure('Big.TButton', font=('Arial', 16, 'bold'), padding=15)
+        style.configure('TLabel', font=('Arial', 14))
+        style.configure('TCheckbutton', font=('Arial', 16, 'bold'))
+        style.configure('TRadiobutton', font=('Arial', 16, 'bold'))
         
     def create_widgets(self):
-        """Cria todos os widgets da interface"""
-        
-        # Frame principal
-        main_frame = ttk.Frame(self.root, padding="20")
+        """Cria todos os widgets da interface - Design acessível para idosos"""
+
+        # Frame principal com fundo branco
+        main_frame = ttk.Frame(self.root, padding="30")
         main_frame.pack(fill=BOTH, expand=True)
-        
+
         # ===== CABEÇALHO =====
         header_frame = ttk.Frame(main_frame)
-        header_frame.pack(fill=X, pady=(0, 20))
-        
-        title = ttk.Label(header_frame, text="🚀 Processador de Memorial Descritivo v2.0", 
+        header_frame.pack(fill=X, pady=(0, 30))
+
+        title = ttk.Label(header_frame, text="📋 Memorial Descritivo INCRA",
                          style='Title.TLabel')
-        title.pack(anchor=W)
-        
-        subtitle = ttk.Label(header_frame, 
-                            text="Extração automatizada com Modo INCRA • Gemini 2.5 Flash Lite",
+        title.pack(anchor=CENTER)
+
+        subtitle = ttk.Label(header_frame,
+                            text="Sistema de Processamento Automatizado",
                             style='Subtitle.TLabel')
-        subtitle.pack(anchor=W)
-        
-        ttk.Separator(main_frame, orient=HORIZONTAL).pack(fill=X, pady=10)
-        
-        # ===== SEÇÃO API KEY =====
-        api_frame = ttk.LabelFrame(main_frame, text="🔑 API Key do Google Gemini", padding="15")
-        api_frame.pack(fill=X, pady=(0, 15))
-        
-        api_input_frame = ttk.Frame(api_frame)
-        api_input_frame.pack(fill=X)
-        
-        api_entry = ttk.Entry(api_input_frame, textvariable=self.api_key, 
-                             font=('Consolas', 10), show='•')
-        api_entry.pack(side=LEFT, fill=X, expand=True, padx=(0, 5))
-        
-        def toggle_api_visibility():
-            if api_entry['show'] == '•':
-                api_entry['show'] = ''
-                show_btn.config(text='👁️')
-            else:
-                api_entry['show'] = '•'
-                show_btn.config(text='🔒')
-        
-        show_btn = ttk.Button(api_input_frame, text='🔒', width=3, 
-                             command=toggle_api_visibility)
-        show_btn.pack(side=LEFT, padx=(0, 5))
-        
-        help_btn = ttk.Button(api_input_frame, text='❓', width=3, 
-                             command=self.show_api_help)
-        help_btn.pack(side=LEFT)
+        subtitle.pack(anchor=CENTER, pady=(5, 0))
+
+        ttk.Separator(main_frame, orient=HORIZONTAL).pack(fill=X, pady=20)
         
         # ===== MODO DE OPERAÇÃO =====
-        modo_frame = ttk.LabelFrame(main_frame, text="🎯 Modo de Operação", padding="15")
-        modo_frame.pack(fill=X, pady=(0, 15))
-        
-        radio_frame = ttk.Frame(modo_frame)
-        radio_frame.pack(fill=X)
-        
+        modo_frame = ttk.LabelFrame(main_frame, text="  🎯 Como deseja trabalhar?  ",
+                                     padding="25")
+        modo_frame.pack(fill=X, pady=(0, 25))
+
+        modo_info = ttk.Label(modo_frame,
+                             text="Escolha uma das opções abaixo:",
+                             font=('Arial', 16, 'bold'))
+        modo_info.pack(anchor=W, pady=(0, 15))
+
         modo_normal_radio = ttk.Radiobutton(
-            radio_frame, 
-            text="📄 Modo Normal (Fornecer PDF)",
+            modo_frame,
+            text="📄  Tenho um arquivo PDF para processar",
             variable=self.modo_operacao,
             value="normal",
             command=self.atualizar_modo
         )
-        modo_normal_radio.pack(side=LEFT, padx=(0, 20))
-        
+        modo_normal_radio.pack(anchor=W, pady=8)
+
         modo_incra_radio = ttk.Radiobutton(
-            radio_frame,
-            text="🏛️ Modo Prenotação INCRA (Busca Automática)",
+            modo_frame,
+            text="🏛️  Buscar por número de Prenotação INCRA",
             variable=self.modo_operacao,
             value="incra",
             command=self.atualizar_modo
         )
-        modo_incra_radio.pack(side=LEFT)
+        modo_incra_radio.pack(anchor=W, pady=8)
         
         # ===== FRAMES DE ENTRADA (Normal e INCRA) =====
-        
+
         # Container para trocar entre modos
         self.input_container = ttk.Frame(main_frame)
-        self.input_container.pack(fill=BOTH, expand=True, pady=(0, 15))
-        
+        self.input_container.pack(fill=BOTH, expand=True, pady=(0, 25))
+
         # Frame Modo Normal (PDF)
-        self.normal_frame = ttk.LabelFrame(self.input_container, text="📄 Arquivo PDF", padding="15")
-        
-        self.drop_frame = Frame(self.normal_frame, bg='white', relief=GROOVE, bd=2)
-        self.drop_frame.pack(fill=BOTH, expand=True, pady=(0, 10))
-        
-        drop_label = Label(self.drop_frame, 
-                          text="📂\n\nArraste o PDF aqui\nou\nClique para selecionar",
-                          bg='white', fg='gray', font=('Segoe UI', 12),
+        self.normal_frame = ttk.LabelFrame(self.input_container,
+                                          text="  📄 Selecione o arquivo PDF  ",
+                                          padding="25")
+
+        self.drop_frame = Frame(self.normal_frame, bg='#E8F4FF', relief=GROOVE, bd=3,
+                               height=200)
+        self.drop_frame.pack(fill=BOTH, expand=True, pady=(0, 15))
+
+        drop_label = Label(self.drop_frame,
+                          text="📂\n\nClique aqui para selecionar o arquivo PDF\n\nou arraste o arquivo para esta área",
+                          bg='#E8F4FF', fg='#000000', font=('Arial', 16, 'bold'),
                           cursor='hand2')
-        drop_label.pack(expand=True)
+        drop_label.pack(expand=True, pady=40)
         drop_label.bind('<Button-1>', lambda e: self.select_pdf())
-        
+
         path_frame = ttk.Frame(self.normal_frame)
         path_frame.pack(fill=X)
-        
-        path_label = ttk.Label(path_frame, text="Arquivo selecionado:")
-        path_label.pack(anchor=W)
-        
-        path_entry = ttk.Entry(path_frame, textvariable=self.pdf_path, 
-                              state='readonly', font=('Segoe UI', 9))
-        path_entry.pack(fill=X, pady=(2, 0))
+
+        path_label = ttk.Label(path_frame, text="Arquivo selecionado:",
+                              font=('Arial', 14, 'bold'))
+        path_label.pack(anchor=W, pady=(0, 5))
+
+        path_entry = ttk.Entry(path_frame, textvariable=self.pdf_path,
+                              state='readonly', font=('Arial', 12))
+        path_entry.pack(fill=X, pady=(2, 0), ipady=8)
         
         # Frame Modo INCRA (Prenotação)
-        self.incra_frame = ttk.LabelFrame(self.input_container, text="🏛️ Prenotação INCRA", padding="15")
-        
-        incra_info = ttk.Label(self.incra_frame, 
-                              text="Digite o número da prenotação (ex: 229885 ou 00229885)\n"
-                                   "O sistema buscará automaticamente na rede do INCRA",
-                              foreground='gray', font=('Segoe UI', 9))
-        incra_info.pack(anchor=W, pady=(0, 10))
-        
+        self.incra_frame = ttk.LabelFrame(self.input_container,
+                                         text="  🏛️ Busca por Prenotação INCRA  ",
+                                         padding="25")
+
+        incra_info = ttk.Label(self.incra_frame,
+                              text="Digite o número da prenotação\n(exemplo: 229885 ou 00229885)",
+                              foreground='#000000', font=('Arial', 14))
+        incra_info.pack(anchor=W, pady=(0, 15))
+
         prenotacao_frame = ttk.Frame(self.incra_frame)
         prenotacao_frame.pack(fill=X)
-        
-        prenotacao_label = ttk.Label(prenotacao_frame, text="Número da Prenotação:")
-        prenotacao_label.pack(anchor=W)
-        
+
+        prenotacao_label = ttk.Label(prenotacao_frame, text="Número da Prenotação:",
+                                    font=('Arial', 16, 'bold'))
+        prenotacao_label.pack(anchor=W, pady=(0, 10))
+
         prenotacao_entry = ttk.Entry(prenotacao_frame, textvariable=self.prenotacao,
-                                     font=('Consolas', 12))
-        prenotacao_entry.pack(fill=X, pady=(2, 0))
+                                     font=('Arial', 18), justify='center')
+        prenotacao_entry.pack(fill=X, pady=(2, 0), ipady=15)
         
         # Mostra frame inicial (Normal)
         self.normal_frame.pack(fill=BOTH, expand=True)
         
         # ===== ESCOLHA DE SAÍDA =====
-        output_frame = ttk.LabelFrame(main_frame, text="💾 Arquivos de Saída", padding="15")
-        output_frame.pack(fill=X, pady=(0, 15))
-        
-        output_info = ttk.Label(output_frame, 
-                               text="Escolha quais arquivos deseja gerar após o processamento:",
-                               foreground='gray', font=('Segoe UI', 9))
-        output_info.pack(anchor=W, pady=(0, 10))
-        
+        output_frame = ttk.LabelFrame(main_frame, text="  💾 Escolha os arquivos a gerar  ",
+                                     padding="25")
+        output_frame.pack(fill=X, pady=(0, 25))
+
+        output_info = ttk.Label(output_frame,
+                               text="Quais tipos de arquivo você quer gerar?",
+                               foreground='#000000', font=('Arial', 14, 'bold'))
+        output_info.pack(anchor=W, pady=(0, 15))
+
         check_frame = ttk.Frame(output_frame)
         check_frame.pack(fill=X)
-        
-        excel_check = ttk.Checkbutton(check_frame, text="📊 Excel (.xlsx)",
+
+        excel_check = ttk.Checkbutton(check_frame, text="📊  Planilha Excel (.xlsx)",
                                      variable=self.gerar_excel)
-        excel_check.pack(side=LEFT, padx=(0, 20))
-        
-        word_check = ttk.Checkbutton(check_frame, text="📝 Word (.docx)",
+        excel_check.pack(anchor=W, pady=8)
+
+        word_check = ttk.Checkbutton(check_frame, text="📝  Documento Word (.docx)",
                                     variable=self.gerar_word)
-        word_check.pack(side=LEFT)
+        word_check.pack(anchor=W, pady=8)
         
         # ===== BOTÕES DE AÇÃO =====
-        process_frame = ttk.Frame(main_frame)
-        process_frame.pack(fill=X, pady=(0, 15))
-        
-        self.process_btn = ttk.Button(process_frame, text="🚀 Processar", 
+        ttk.Separator(main_frame, orient=HORIZONTAL).pack(fill=X, pady=20)
+
+        button_frame = ttk.Frame(main_frame)
+        button_frame.pack(fill=X, pady=(10, 15))
+
+        self.process_btn = ttk.Button(button_frame, text="✅ PROCESSAR AGORA",
                                       command=self.process_memorial,
                                       style='Primary.TButton')
-        self.process_btn.pack(side=LEFT, padx=(0, 10))
-        
-        clear_btn = ttk.Button(process_frame, text="🗑️ Limpar", 
-                              command=self.clear_all)
-        clear_btn.pack(side=LEFT)
+        self.process_btn.pack(fill=X, pady=(0, 10), ipady=10)
+
+        clear_btn = ttk.Button(button_frame, text="🗑️ Limpar Tudo",
+                              command=self.clear_all,
+                              style='Big.TButton')
+        clear_btn.pack(fill=X, ipady=8)
         
         # ===== BARRA DE PROGRESSO =====
-        progress_frame = ttk.LabelFrame(main_frame, text="📊 Progresso", padding="15")
-        progress_frame.pack(fill=X, pady=(0, 15))
-        
+        progress_frame = ttk.LabelFrame(main_frame, text="  📊 Andamento  ",
+                                       padding="20")
+        progress_frame.pack(fill=X, pady=(0, 20))
+
         self.progress_bar = ttk.Progressbar(progress_frame, mode='determinate',
-                                           variable=self.progress_value)
-        self.progress_bar.pack(fill=X, pady=(0, 5))
-        
+                                           variable=self.progress_value,
+                                           length=400)
+        self.progress_bar.pack(fill=X, pady=(0, 10), ipady=8)
+
         self.status_label = ttk.Label(progress_frame, textvariable=self.status_text,
                                       style='Status.TLabel')
-        self.status_label.pack(anchor=W)
+        self.status_label.pack(anchor=CENTER)
         
         # ===== LOG =====
-        log_frame = ttk.LabelFrame(main_frame, text="📋 Log", padding="10")
+        log_frame = ttk.LabelFrame(main_frame, text="  📋 Mensagens do Sistema  ",
+                                  padding="15")
         log_frame.pack(fill=BOTH, expand=True)
-        
+
         log_scroll = ttk.Scrollbar(log_frame)
         log_scroll.pack(side=RIGHT, fill=Y)
-        
-        self.log_text = Text(log_frame, height=8, font=('Consolas', 9),
+
+        self.log_text = Text(log_frame, height=6, font=('Courier New', 12, 'bold'),
                             yscrollcommand=log_scroll.set, wrap=WORD,
-                            bg='#1E1E1E', fg='#D4D4D4', insertbackground='white')
+                            bg='#000000', fg='#00FF00', insertbackground='white')
         self.log_text.pack(fill=BOTH, expand=True)
         log_scroll.config(command=self.log_text.yview)
-        
-        self.log_text.tag_config('info', foreground='#4FC3F7')
-        self.log_text.tag_config('success', foreground='#81C784')
-        self.log_text.tag_config('error', foreground='#E57373')
-        self.log_text.tag_config('warning', foreground='#FFB74D')
-        self.log_text.tag_config('incra', foreground='#CE93D8')
-        
-        self.log("Bem-vindo ao Processador v2.0!", 'info')
-        self.log("🎯 Escolha o modo de operação", 'info')
-        self.log("💡 Modo INCRA: Busca automática em rede", 'incra')
+
+        self.log_text.tag_config('info', foreground='#00BFFF')
+        self.log_text.tag_config('success', foreground='#00FF00')
+        self.log_text.tag_config('error', foreground='#FF3333')
+        self.log_text.tag_config('warning', foreground='#FFD700')
+        self.log_text.tag_config('incra', foreground='#FF00FF')
+
+        self.log("✅ Sistema pronto para uso!", 'success')
+        self.log("👉 Escolha como deseja trabalhar acima", 'info')
         
     def setup_drag_drop(self):
         """Configura funcionalidade de drag & drop"""
@@ -305,15 +297,16 @@ class MemorialGUI_V2:
         # Esconde ambos os frames
         self.normal_frame.pack_forget()
         self.incra_frame.pack_forget()
-        
+
         # Mostra o frame correto
         if self.modo_operacao.get() == "normal":
             self.normal_frame.pack(fill=BOTH, expand=True)
-            self.log("📄 Modo Normal ativado", 'info')
+            self.log("📄 MODO: Processar arquivo PDF", 'info')
+            self.log("👉 Selecione um arquivo PDF acima", 'success')
         else:
             self.incra_frame.pack(fill=BOTH, expand=True)
-            self.log("🏛️ Modo INCRA ativado", 'incra')
-            self.log(f"📂 Rede: {INCRA_CONFIG['base_path']}", 'info')
+            self.log("🏛️ MODO: Busca por Prenotação INCRA", 'incra')
+            self.log("👉 Digite o número da prenotação acima", 'success')
     
     def handle_drop(self, event):
         """Manipula evento de drop de arquivo"""
@@ -342,25 +335,10 @@ class MemorialGUI_V2:
     def update_drop_frame(self, has_file):
         """Atualiza visual da área de drop"""
         if has_file:
-            self.drop_frame.config(bg='#E8F5E9')
+            self.drop_frame.config(bg='#90EE90')  # Verde claro
         else:
-            self.drop_frame.config(bg='white')
+            self.drop_frame.config(bg='#E8F4FF')  # Azul claro
     
-    def show_api_help(self):
-        """Mostra ajuda sobre API Key"""
-        help_text = """🔑 Como obter a API Key do Google Gemini:
-
-1. Acesse: https://aistudio.google.com/app/apikey
-2. Faça login com sua conta Google
-3. Clique em "Create API Key"
-4. Copie a chave gerada (formato: AIza...)
-5. Cole no campo acima ou configure como variável de ambiente
-
-📊 Limites do plano gratuito:
-• 15 requisições/minuto
-• 1.500 requisições/dia"""
-        
-        messagebox.showinfo("Ajuda - API Key", help_text)
     
     def log(self, message, tag='info'):
         """Adiciona mensagem ao log"""
@@ -380,40 +358,45 @@ class MemorialGUI_V2:
     
     def validate_inputs(self):
         """Valida entradas antes de processar"""
-        if not self.api_key.get():
-            messagebox.showerror("Erro", "API Key não configurada!")
-            return False
-        
         if self.modo_operacao.get() == "normal":
             if not self.pdf_path.get():
-                messagebox.showerror("Erro", "Nenhum arquivo PDF selecionado!")
+                messagebox.showerror("⚠️ Atenção",
+                                   "Por favor, selecione um arquivo PDF!",
+                                   icon='warning')
                 return False
             if not os.path.exists(self.pdf_path.get()):
-                messagebox.showerror("Erro", "Arquivo não encontrado!")
+                messagebox.showerror("⚠️ Atenção",
+                                   "O arquivo selecionado não foi encontrado!",
+                                   icon='warning')
                 return False
         else:  # modo incra
             if not self.prenotacao.get():
-                messagebox.showerror("Erro", "Número da prenotação não informado!")
+                messagebox.showerror("⚠️ Atenção",
+                                   "Por favor, digite o número da prenotação!",
+                                   icon='warning')
                 return False
-        
+
         if not self.gerar_excel.get() and not self.gerar_word.get():
-            messagebox.showwarning("Aviso", "Selecione pelo menos um tipo de arquivo para gerar!")
+            messagebox.showwarning("⚠️ Atenção",
+                                 "Selecione pelo menos um tipo de arquivo!\n\n"
+                                 "Marque Excel ou Word (ou ambos).")
             return False
-        
+
         return True
     
     def process_memorial(self):
         """Inicia processamento em thread separada"""
         if self.processing:
-            messagebox.showwarning("Aviso", "Já existe um processamento em andamento.")
+            messagebox.showwarning("⚠️ Atenção",
+                                 "Aguarde! Já existe um processamento em andamento.")
             return
-        
+
         if not self.validate_inputs():
             return
-        
-        self.process_btn.config(state='disabled', text='⏳ Processando...')
+
+        self.process_btn.config(state='disabled', text='⏳ PROCESSANDO... AGUARDE')
         self.processing = True
-        
+
         thread = threading.Thread(target=self.process_thread, daemon=True)
         thread.start()
     
@@ -527,8 +510,8 @@ class MemorialGUI_V2:
         
         finally:
             self.root.after(100, lambda: self.process_btn.config(
-                state='normal', 
-                text='🚀 Processar'
+                state='normal',
+                text='✅ PROCESSAR AGORA'
             ))
             self.processing = False
     

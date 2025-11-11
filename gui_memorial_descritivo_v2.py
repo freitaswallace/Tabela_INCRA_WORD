@@ -18,6 +18,8 @@ import json
 import math
 import shutil
 import threading
+import subprocess
+import platform
 from pathlib import Path
 from tkinter import *
 from tkinter import ttk, filedialog, messagebox
@@ -49,10 +51,10 @@ class MemorialGUI_V2:
     
     def __init__(self, root):
         self.root = root
-        self.root.title("Processador de Memorial Descritivo")
-        self.root.geometry("1200x900")
+        self.root.title("Memorial Descritivo INCRA - Processador Profissional")
+        self.root.geometry("1400x950")
         self.root.resizable(True, True)
-        self.root.configure(bg='#F0F0F0')
+        self.root.configure(bg='#ECF0F1')
         
         # Variáveis
         self.pdf_path = StringVar()
@@ -70,6 +72,10 @@ class MemorialGUI_V2:
 
         # API Key fixa
         self.api_key.set('AIzaSyAdA_GO7cQ0m1ouie4wGwXf4a4SnHKjBh8')
+
+        # Caminhos dos arquivos gerados
+        self.excel_gerado = None
+        self.word_gerado = None
         
         # Configurar estilo
         self.setup_style()
@@ -81,43 +87,94 @@ class MemorialGUI_V2:
         self.setup_drag_drop()
     
     def setup_style(self):
-        """Configura o estilo visual da interface - Acessível para idosos"""
+        """Configura o estilo visual da interface - Profissional e Acessível"""
         style = ttk.Style()
         style.theme_use('clam')
 
+        # Paleta profissional: Azul e Cinza
         self.colors = {
-            'primary': '#0066CC',      # Azul mais escuro
-            'success': '#228B22',      # Verde mais escuro
-            'danger': '#CC0000',       # Vermelho mais escuro
-            'warning': '#FF8C00',      # Laranja mais escuro
-            'incra': '#6A1B9A',        # Roxo mais escuro
-            'bg': '#FFFFFF',           # Branco puro
-            'text': '#000000',         # Preto puro
-            'border': '#333333'        # Cinza escuro
+            'primary': '#2C3E50',      # Azul escuro (títulos)
+            'secondary': '#3498DB',    # Azul médio (botões principais)
+            'success': '#27AE60',      # Verde profissional
+            'danger': '#E74C3C',       # Vermelho profissional
+            'warning': '#F39C12',      # Laranja profissional
+            'info': '#3498DB',         # Azul informativo
+            'bg_main': '#ECF0F1',      # Cinza muito claro (fundo)
+            'bg_card': '#FFFFFF',      # Branco (cards)
+            'text': '#2C3E50',         # Texto escuro
+            'text_light': '#7F8C8D',   # Texto claro
+            'border': '#BDC3C7'        # Borda cinza
         }
 
         # Fontes GRANDES para acessibilidade
-        style.configure('Title.TLabel', font=('Arial', 24, 'bold'), foreground=self.colors['primary'])
-        style.configure('Subtitle.TLabel', font=('Arial', 16), foreground='#000000')
-        style.configure('Status.TLabel', font=('Arial', 14, 'bold'), foreground=self.colors['text'])
-        style.configure('Primary.TButton', font=('Arial', 18, 'bold'), padding=20)
-        style.configure('Big.TButton', font=('Arial', 16, 'bold'), padding=15)
-        style.configure('TLabel', font=('Arial', 14))
-        style.configure('TCheckbutton', font=('Arial', 16, 'bold'))
-        style.configure('TRadiobutton', font=('Arial', 16, 'bold'))
+        style.configure('Title.TLabel',
+                       font=('Segoe UI', 28, 'bold'),
+                       foreground=self.colors['primary'],
+                       background=self.colors['bg_main'])
+
+        style.configure('Subtitle.TLabel',
+                       font=('Segoe UI', 14),
+                       foreground=self.colors['text_light'],
+                       background=self.colors['bg_main'])
+
+        style.configure('SectionTitle.TLabel',
+                       font=('Segoe UI', 16, 'bold'),
+                       foreground=self.colors['primary'])
+
+        style.configure('Status.TLabel',
+                       font=('Segoe UI', 13, 'bold'),
+                       foreground=self.colors['text'])
+
+        style.configure('Primary.TButton',
+                       font=('Segoe UI', 16, 'bold'),
+                       padding=20,
+                       background=self.colors['secondary'])
+
+        style.configure('Success.TButton',
+                       font=('Segoe UI', 14, 'bold'),
+                       padding=15,
+                       background=self.colors['success'])
+
+        style.configure('Big.TButton',
+                       font=('Segoe UI', 14, 'bold'),
+                       padding=15)
+
+        style.configure('TLabel',
+                       font=('Segoe UI', 13),
+                       background=self.colors['bg_card'])
+
+        style.configure('TCheckbutton',
+                       font=('Segoe UI', 15, 'bold'),
+                       background=self.colors['bg_card'])
+
+        style.configure('TRadiobutton',
+                       font=('Segoe UI', 15, 'bold'),
+                       background=self.colors['bg_card'])
+
+        style.configure('Card.TFrame',
+                       background=self.colors['bg_card'])
+
+        style.configure('TLabelframe',
+                       background=self.colors['bg_card'],
+                       bordercolor=self.colors['border'])
+
+        style.configure('TLabelframe.Label',
+                       font=('Segoe UI', 14, 'bold'),
+                       foreground=self.colors['primary'],
+                       background=self.colors['bg_card'])
         
     def create_widgets(self):
-        """Cria todos os widgets da interface - Design acessível para idosos"""
+        """Cria todos os widgets da interface - Design Profissional"""
 
         # Container principal com Canvas e Scrollbar
-        container = ttk.Frame(self.root)
+        container = Frame(self.root, bg=self.colors['bg_main'])
         container.pack(fill=BOTH, expand=True)
 
         # Canvas para permitir scroll
-        canvas = Canvas(container, bg='#F0F0F0', highlightthickness=0)
+        canvas = Canvas(container, bg=self.colors['bg_main'], highlightthickness=0)
         canvas.pack(side=LEFT, fill=BOTH, expand=True)
 
-        # Scrollbar
+        # Scrollbar profissional
         scrollbar = ttk.Scrollbar(container, orient=VERTICAL, command=canvas.yview)
         scrollbar.pack(side=RIGHT, fill=Y)
 
@@ -125,7 +182,7 @@ class MemorialGUI_V2:
         canvas.configure(yscrollcommand=scrollbar.set)
 
         # Frame principal dentro do canvas
-        main_frame = ttk.Frame(canvas, padding="30")
+        main_frame = Frame(canvas, bg=self.colors['bg_main'], padx=40, pady=30)
         canvas_window = canvas.create_window((0, 0), window=main_frame, anchor=NW)
 
         # Função para atualizar o scroll quando o conteúdo mudar
@@ -147,48 +204,72 @@ class MemorialGUI_V2:
         self.canvas = canvas
         self.main_frame = main_frame
 
-        # ===== CABEÇALHO =====
-        header_frame = ttk.Frame(main_frame)
-        header_frame.pack(fill=X, pady=(0, 30))
+        # ===== CABEÇALHO PROFISSIONAL =====
+        header_frame = Frame(main_frame, bg=self.colors['bg_main'])
+        header_frame.pack(fill=X, pady=(0, 35))
 
-        title = ttk.Label(header_frame, text="📋 Memorial Descritivo INCRA",
-                         style='Title.TLabel')
-        title.pack(anchor=CENTER)
+        # Título com ícone
+        title_label = Label(header_frame,
+                           text="📋  Memorial Descritivo INCRA",
+                           font=('Segoe UI', 28, 'bold'),
+                           fg=self.colors['primary'],
+                           bg=self.colors['bg_main'])
+        title_label.pack(anchor=CENTER)
 
-        subtitle = ttk.Label(header_frame,
-                            text="Sistema de Processamento Automatizado",
-                            style='Subtitle.TLabel')
-        subtitle.pack(anchor=CENTER, pady=(5, 0))
+        # Subtítulo
+        subtitle_label = Label(header_frame,
+                              text="Sistema Profissional de Processamento Automatizado",
+                              font=('Segoe UI', 13),
+                              fg=self.colors['text_light'],
+                              bg=self.colors['bg_main'])
+        subtitle_label.pack(anchor=CENTER, pady=(8, 0))
 
-        ttk.Separator(main_frame, orient=HORIZONTAL).pack(fill=X, pady=20)
+        # Linha separadora
+        separator1 = Frame(main_frame, height=2, bg=self.colors['border'])
+        separator1.pack(fill=X, pady=25)
         
-        # ===== MODO DE OPERAÇÃO =====
-        modo_frame = ttk.LabelFrame(main_frame, text="  🎯 Como deseja trabalhar?  ",
-                                     padding="25")
-        modo_frame.pack(fill=X, pady=(0, 25))
+        # ===== SEÇÃO 1: MODO DE OPERAÇÃO =====
+        modo_card = Frame(main_frame, bg=self.colors['bg_card'], relief=FLAT, bd=0)
+        modo_card.pack(fill=X, pady=(0, 20))
 
-        modo_info = ttk.Label(modo_frame,
-                             text="Escolha uma das opções abaixo:",
-                             font=('Arial', 16, 'bold'))
-        modo_info.pack(anchor=W, pady=(0, 15))
+        # Padding interno do card
+        modo_inner = Frame(modo_card, bg=self.colors['bg_card'], padx=30, pady=25)
+        modo_inner.pack(fill=BOTH, expand=True)
 
+        # Título da seção
+        modo_title = Label(modo_inner,
+                          text="🎯  Modo de Operação",
+                          font=('Segoe UI', 18, 'bold'),
+                          fg=self.colors['primary'],
+                          bg=self.colors['bg_card'])
+        modo_title.pack(anchor=W, pady=(0, 8))
+
+        # Subtítulo da seção
+        modo_subtitle = Label(modo_inner,
+                             text="Selecione como deseja processar o memorial descritivo:",
+                             font=('Segoe UI', 12),
+                             fg=self.colors['text_light'],
+                             bg=self.colors['bg_card'])
+        modo_subtitle.pack(anchor=W, pady=(0, 20))
+
+        # Opções
         modo_normal_radio = ttk.Radiobutton(
-            modo_frame,
-            text="📄  Tenho um arquivo PDF para processar",
+            modo_inner,
+            text="📄  Processar arquivo PDF já existente",
             variable=self.modo_operacao,
             value="normal",
             command=self.atualizar_modo
         )
-        modo_normal_radio.pack(anchor=W, pady=8)
+        modo_normal_radio.pack(anchor=W, pady=10)
 
         modo_incra_radio = ttk.Radiobutton(
-            modo_frame,
-            text="🏛️  Buscar por número de Prenotação INCRA",
+            modo_inner,
+            text="🏛️  Buscar automaticamente por número de Prenotação INCRA",
             variable=self.modo_operacao,
             value="incra",
             command=self.atualizar_modo
         )
-        modo_incra_radio.pack(anchor=W, pady=8)
+        modo_incra_radio.pack(anchor=W, pady=10)
         
         # ===== FRAMES DE ENTRADA (Normal e INCRA) =====
 
@@ -320,6 +401,32 @@ class MemorialGUI_V2:
 
         self.log("✅ Sistema pronto para uso!", 'success')
         self.log("👉 Escolha como deseja trabalhar acima", 'info')
+
+        # ===== BOTÕES PARA ABRIR ARQUIVOS (inicialmente ocultos) =====
+        self.results_frame = Frame(main_frame, bg=self.colors['bg_main'])
+        # Não adiciona ao pack ainda - aparece após processamento
+
+        results_title = Label(self.results_frame,
+                            text="✨  Arquivos Gerados",
+                            font=('Segoe UI', 18, 'bold'),
+                            fg=self.colors['success'],
+                            bg=self.colors['bg_main'])
+        results_title.pack(anchor=W, pady=(0, 15))
+
+        results_buttons = Frame(self.results_frame, bg=self.colors['bg_main'])
+        results_buttons.pack(fill=X)
+
+        self.btn_abrir_excel = ttk.Button(results_buttons,
+                                         text="📊  Abrir Tabela Excel",
+                                         command=self.abrir_excel,
+                                         style='Success.TButton')
+        self.btn_abrir_excel.pack(side=LEFT, padx=(0, 15), ipady=10, ipadx=20)
+
+        self.btn_abrir_word = ttk.Button(results_buttons,
+                                        text="📝  Abrir Documento Word",
+                                        command=self.abrir_word,
+                                        style='Success.TButton')
+        self.btn_abrir_word.pack(side=LEFT, ipady=10, ipadx=20)
         
     def setup_drag_drop(self):
         """Configura funcionalidade de drag & drop"""
@@ -372,8 +479,78 @@ class MemorialGUI_V2:
             self.drop_frame.config(bg='#90EE90')  # Verde claro
         else:
             self.drop_frame.config(bg='#E8F4FF')  # Azul claro
-    
-    
+
+    def get_output_directory(self, prefixo=None):
+        """
+        Retorna o diretório de saída em Documents/Tabelas_Incra
+
+        Args:
+            prefixo: Nome da subpasta (ex: 'Prenotacao_00229885')
+
+        Returns:
+            Path do diretório de saída
+        """
+        home = Path.home()
+        tabelas_incra = home / 'Documents' / 'Tabelas_Incra'
+
+        if prefixo:
+            output_dir = tabelas_incra / prefixo
+        else:
+            # Se não tem prefixo, usa pasta raiz
+            output_dir = tabelas_incra
+
+        # Cria pasta se não existir
+        output_dir.mkdir(parents=True, exist_ok=True)
+
+        return output_dir
+
+    def abrir_arquivo(self, caminho):
+        """
+        Abre um arquivo com o aplicativo padrão do sistema
+
+        Args:
+            caminho: Path ou string do arquivo a abrir
+        """
+        try:
+            if not caminho or not os.path.exists(caminho):
+                messagebox.showerror("Erro", "Arquivo não encontrado!")
+                return
+
+            sistema = platform.system()
+
+            if sistema == 'Windows':
+                os.startfile(caminho)
+            elif sistema == 'Darwin':  # macOS
+                subprocess.run(['open', caminho])
+            else:  # Linux
+                subprocess.run(['xdg-open', caminho])
+
+            self.log(f"✅ Arquivo aberto: {Path(caminho).name}", 'success')
+
+        except Exception as e:
+            messagebox.showerror("Erro", f"Não foi possível abrir o arquivo:\n{e}")
+            self.log(f"❌ Erro ao abrir arquivo: {e}", 'error')
+
+    def abrir_excel(self):
+        """Abre o arquivo Excel gerado"""
+        if self.excel_gerado:
+            self.abrir_arquivo(self.excel_gerado)
+        else:
+            messagebox.showwarning("Aviso", "Nenhum arquivo Excel foi gerado ainda!")
+
+    def abrir_word(self):
+        """Abre o arquivo Word gerado"""
+        if self.word_gerado:
+            self.abrir_arquivo(self.word_gerado)
+        else:
+            messagebox.showwarning("Aviso", "Nenhum arquivo Word foi gerado ainda!")
+
+    def mostrar_botoes_resultados(self):
+        """Mostra os botões para abrir arquivos após processamento"""
+        self.results_frame.pack(fill=X, pady=(25, 0))
+        # Scroll para mostrar os botões
+        self.canvas.yview_moveto(1.0)
+
     def log(self, message, tag='info'):
         """Adiciona mensagem ao log"""
         self.log_text.insert(END, f"{message}\n", tag)
@@ -442,12 +619,13 @@ class MemorialGUI_V2:
             if self.modo_operacao.get() == "normal":
                 # Modo Normal
                 pdf_path = self.pdf_path.get()
-                output_dir = Path(pdf_path).parent
-                prefixo = "output"
-                
+                pdf_nome = Path(pdf_path).stem
+                output_dir = self.get_output_directory(f"Processamento_{pdf_nome}")
+                prefixo = pdf_nome
+
                 self.update_progress(10, "Conectando com API...")
                 self.log("📡 Processando PDF...", 'info')
-                
+
                 self.table_data = extract_table_from_pdf(pdf_path, api_key)
                 
             else:
@@ -494,9 +672,10 @@ class MemorialGUI_V2:
                 self.update_progress(40, "Extraindo dados...")
                 self.log("📊 Extraindo Memorial do INCRA...", 'incra')
                 self.table_data = extrair_memorial_incra(pdf_path, api_key)
-                
+
+                # Usa o diretório que já foi criado pela função copiar_para_downloads
                 output_dir = pdf_path.parent
-                prefixo = f"prenotacao_{prenotacao_formatada}"
+                prefixo = f"Prenotacao_{prenotacao_formatada}"
             
             # Dados extraídos com sucesso
             num_linhas = len(self.table_data.get('data', []))
@@ -505,33 +684,47 @@ class MemorialGUI_V2:
             
             # Gera arquivos conforme escolha do usuário
             arquivos_gerados = []
-            
+
+            # Reset dos caminhos de arquivos gerados
+            self.excel_gerado = None
+            self.word_gerado = None
+
             if self.gerar_excel.get():
                 self.update_progress(70, "Gerando Excel...")
                 excel_path = output_dir / f"{prefixo}.xlsx"
                 create_excel_file(self.table_data, str(excel_path))
+                self.excel_gerado = str(excel_path)  # Salva caminho
                 arquivos_gerados.append(f"📊 {excel_path.name}")
                 self.log(f"✅ Excel: {excel_path.name}", 'success')
-            
+
             if self.gerar_word.get():
                 self.update_progress(85, "Gerando Word...")
                 word_path = output_dir / f"{prefixo}.docx"
                 create_word_file(self.table_data, str(word_path))
+                self.word_gerado = str(word_path)  # Salva caminho
                 arquivos_gerados.append(f"📝 {word_path.name}")
                 self.log(f"✅ Word: {word_path.name}", 'success')
-            
+
             self.update_progress(100, "Concluído!")
             self.log("="*50, 'success')
             self.log("✨ PROCESSAMENTO CONCLUÍDO!", 'success')
-            self.log(f"📂 Local: {output_dir}", 'info')
+            self.log(f"📂 Pasta: {output_dir.name}", 'info')
+            self.log(f"📍 Local completo:", 'info')
+            self.log(f"   {output_dir}", 'info')
             self.log("="*50, 'success')
-            
+
+            # Mostra botões para abrir arquivos
+            if self.excel_gerado or self.word_gerado:
+                self.root.after(100, self.mostrar_botoes_resultados)
+
             # Mensagem de sucesso
-            msg = "Processamento concluído!\n\n"
+            msg = "✅ Processamento concluído com sucesso!\n\n"
+            msg += "Arquivos gerados:\n"
             msg += "\n".join(arquivos_gerados)
-            msg += f"\n\n📂 Local: {output_dir}"
-            
-            self.root.after(100, lambda: messagebox.showinfo("Sucesso!", msg))
+            msg += f"\n\n📂 Salvos em:\n{output_dir}"
+            msg += "\n\nUse os botões abaixo para abrir os arquivos!"
+
+            self.root.after(100, lambda: messagebox.showinfo("✨ Sucesso!", msg))
             
         except Exception as ex:
             self.log(f"❌ ERRO: {str(ex)}", 'error')

@@ -237,26 +237,31 @@ def buscar_arquivo_incra(prenotacao: str) -> Optional[Path]:
 
 def copiar_para_downloads(arquivo_origem: Path, prenotacao: str) -> Path:
     """
-    Copia arquivo TIFF para pasta Downloads do usuário
-    
+    Copia arquivo TIFF para pasta Tabelas_Incra em Documentos
+
     Args:
         arquivo_origem: Path do arquivo original (pode ser string UNC)
         prenotacao: Número da prenotação formatado
-    
+
     Returns:
         Path do arquivo copiado
     """
-    # Determina pasta Downloads do usuário
+    # Determina pasta Documentos/Tabelas_Incra do usuário
     home = Path.home()
-    downloads = home / 'Downloads' / f'INCRA_Prenotacao_{prenotacao}'
-    
-    # Cria pasta se não existir
-    downloads.mkdir(parents=True, exist_ok=True)
-    print(f"📁 Pasta criada: {downloads}")
+    tabelas_incra = home / 'Documents' / 'Tabelas_Incra'
+
+    # Cria pasta base se não existir
+    tabelas_incra.mkdir(parents=True, exist_ok=True)
+
+    # Cria subpasta específica para esta prenotação
+    pasta_prenotacao = tabelas_incra / f'Prenotacao_{prenotacao}'
+    pasta_prenotacao.mkdir(parents=True, exist_ok=True)
+
+    print(f"📁 Pasta criada: {pasta_prenotacao}")
     
     # Nome do arquivo
     nome_arquivo = os.path.basename(str(arquivo_origem))
-    destino = downloads / nome_arquivo
+    destino = pasta_prenotacao / nome_arquivo
     
     print(f"📋 Copiando arquivo...")
     print(f"   Origem: {arquivo_origem}")

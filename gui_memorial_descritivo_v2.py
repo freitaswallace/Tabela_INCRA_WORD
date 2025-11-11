@@ -109,9 +109,43 @@ class MemorialGUI_V2:
     def create_widgets(self):
         """Cria todos os widgets da interface - Design acessível para idosos"""
 
-        # Frame principal com fundo branco
-        main_frame = ttk.Frame(self.root, padding="30")
-        main_frame.pack(fill=BOTH, expand=True)
+        # Container principal com Canvas e Scrollbar
+        container = ttk.Frame(self.root)
+        container.pack(fill=BOTH, expand=True)
+
+        # Canvas para permitir scroll
+        canvas = Canvas(container, bg='#F0F0F0', highlightthickness=0)
+        canvas.pack(side=LEFT, fill=BOTH, expand=True)
+
+        # Scrollbar
+        scrollbar = ttk.Scrollbar(container, orient=VERTICAL, command=canvas.yview)
+        scrollbar.pack(side=RIGHT, fill=Y)
+
+        # Configurar canvas
+        canvas.configure(yscrollcommand=scrollbar.set)
+
+        # Frame principal dentro do canvas
+        main_frame = ttk.Frame(canvas, padding="30")
+        canvas_window = canvas.create_window((0, 0), window=main_frame, anchor=NW)
+
+        # Função para atualizar o scroll quando o conteúdo mudar
+        def configure_scroll(event=None):
+            canvas.configure(scrollregion=canvas.bbox("all"))
+            # Ajustar largura do frame ao canvas
+            canvas.itemconfig(canvas_window, width=canvas.winfo_width())
+
+        main_frame.bind('<Configure>', configure_scroll)
+        canvas.bind('<Configure>', configure_scroll)
+
+        # Scroll com a roda do mouse
+        def on_mousewheel(event):
+            canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+
+        canvas.bind_all("<MouseWheel>", on_mousewheel)
+
+        # Armazenar referências
+        self.canvas = canvas
+        self.main_frame = main_frame
 
         # ===== CABEÇALHO =====
         header_frame = ttk.Frame(main_frame)

@@ -335,25 +335,96 @@ class MemorialGUI_V2:
         self.normal_frame.pack(fill=BOTH, expand=True)
         
         # ===== ESCOLHA DE SAÍDA =====
-        output_frame = ttk.LabelFrame(main_frame, text="  💾 Escolha os arquivos a gerar  ",
-                                     padding="25")
-        output_frame.pack(fill=X, pady=(0, 25))
+        output_card = Frame(main_frame, bg=self.colors['card_bg'], relief=FLAT, bd=0)
+        output_card.pack(fill=X, pady=(0, 25))
 
-        output_info = ttk.Label(output_frame,
-                               text="Quais tipos de arquivo você quer gerar?",
-                               foreground='#000000', font=('Arial', 14, 'bold'))
-        output_info.pack(anchor=W, pady=(0, 15))
+        output_inner = Frame(output_card, bg=self.colors['card_bg'], padx=30, pady=25)
+        output_inner.pack(fill=BOTH, expand=True)
 
-        check_frame = ttk.Frame(output_frame)
-        check_frame.pack(fill=X)
+        # Título da seção
+        output_title = Label(output_inner,
+                            text="💾  Escolha os Arquivos a Gerar",
+                            font=('Segoe UI', 18, 'bold'),
+                            fg=self.colors['primary'],
+                            bg=self.colors['card_bg'])
+        output_title.pack(anchor=W, pady=(0, 8))
 
-        excel_check = ttk.Checkbutton(check_frame, text="📊  Planilha Excel (.xlsx)",
-                                     variable=self.gerar_excel)
-        excel_check.pack(anchor=W, pady=8)
+        # Subtítulo
+        output_subtitle = Label(output_inner,
+                               text="Selecione os formatos de saída desejados (você pode escolher ambos):",
+                               font=('Segoe UI', 12),
+                               fg=self.colors['text_secondary'],
+                               bg=self.colors['card_bg'])
+        output_subtitle.pack(anchor=W, pady=(0, 20))
 
-        word_check = ttk.Checkbutton(check_frame, text="📝  Documento Word (.docx)",
-                                    variable=self.gerar_word)
-        word_check.pack(anchor=W, pady=8)
+        # Container dos botões
+        buttons_container = Frame(output_inner, bg=self.colors['card_bg'])
+        buttons_container.pack(fill=X)
+
+        # Botão Excel
+        self.excel_button = Frame(buttons_container, bg='#E3E5E8', relief=SOLID, bd=2, cursor='hand2')
+        self.excel_button.pack(side=LEFT, fill=BOTH, expand=True, padx=(0, 10))
+
+        excel_inner = Frame(self.excel_button, bg='#E3E5E8', padx=20, pady=15)
+        excel_inner.pack(fill=BOTH, expand=True)
+
+        excel_icon = Label(excel_inner, text="📊", font=('Segoe UI', 32), bg='#E3E5E8')
+        excel_icon.pack(pady=(5, 10))
+
+        excel_label = Label(excel_inner, text="Planilha Excel",
+                           font=('Segoe UI', 14, 'bold'),
+                           fg=self.colors['text'], bg='#E3E5E8')
+        excel_label.pack()
+
+        excel_desc = Label(excel_inner, text="Formato .xlsx",
+                          font=('Segoe UI', 10),
+                          fg=self.colors['text_secondary'], bg='#E3E5E8')
+        excel_desc.pack(pady=(2, 5))
+
+        # Botão Word
+        self.word_button = Frame(buttons_container, bg='#E3E5E8', relief=SOLID, bd=2, cursor='hand2')
+        self.word_button.pack(side=LEFT, fill=BOTH, expand=True, padx=(10, 0))
+
+        word_inner = Frame(self.word_button, bg='#E3E5E8', padx=20, pady=15)
+        word_inner.pack(fill=BOTH, expand=True)
+
+        word_icon = Label(word_inner, text="📝", font=('Segoe UI', 32), bg='#E3E5E8')
+        word_icon.pack(pady=(5, 10))
+
+        word_label = Label(word_inner, text="Documento Word",
+                          font=('Segoe UI', 14, 'bold'),
+                          fg=self.colors['text'], bg='#E3E5E8')
+        word_label.pack()
+
+        word_desc = Label(word_inner, text="Formato .docx",
+                         font=('Segoe UI', 10),
+                         fg=self.colors['text_secondary'], bg='#E3E5E8')
+        word_desc.pack(pady=(2, 5))
+
+        # Bind de cliques
+        def toggle_excel(event=None):
+            self.gerar_excel.set(not self.gerar_excel.get())
+            self.update_output_buttons()
+
+        def toggle_word(event=None):
+            self.gerar_word.set(not self.gerar_word.get())
+            self.update_output_buttons()
+
+        self.excel_button.bind('<Button-1>', toggle_excel)
+        excel_inner.bind('<Button-1>', toggle_excel)
+        excel_icon.bind('<Button-1>', toggle_excel)
+        excel_label.bind('<Button-1>', toggle_excel)
+        excel_desc.bind('<Button-1>', toggle_excel)
+
+        self.word_button.bind('<Button-1>', toggle_word)
+        word_inner.bind('<Button-1>', toggle_word)
+        word_icon.bind('<Button-1>', toggle_word)
+        word_label.bind('<Button-1>', toggle_word)
+        word_desc.bind('<Button-1>', toggle_word)
+
+        # Armazena referências para atualizar cores
+        self.excel_widgets = [self.excel_button, excel_inner, excel_icon, excel_label, excel_desc]
+        self.word_widgets = [self.word_button, word_inner, word_icon, word_label, word_desc]
         
         # ===== BOTÕES DE AÇÃO =====
         ttk.Separator(main_frame, orient=HORIZONTAL).pack(fill=X, pady=20)
@@ -435,7 +506,36 @@ class MemorialGUI_V2:
                                         style='Success.TButton',
                                         cursor='hand2')
         self.btn_abrir_word.pack(side=LEFT, ipady=10, ipadx=20)
-        
+
+    def update_output_buttons(self):
+        """Atualiza visual dos botões de seleção de saída"""
+        # Cor para não selecionado (cinza claro)
+        color_inactive = '#E3E5E8'
+        # Cor para selecionado (verde)
+        color_active = '#D4EDDA'
+        border_active = '#28A745'
+        border_inactive = '#E3E5E8'
+
+        # Atualiza botão Excel
+        if self.gerar_excel.get():
+            for widget in self.excel_widgets:
+                widget.config(bg=color_active)
+            self.excel_button.config(relief=SOLID, bd=3, highlightbackground=border_active, highlightthickness=2)
+        else:
+            for widget in self.excel_widgets:
+                widget.config(bg=color_inactive)
+            self.excel_button.config(relief=SOLID, bd=2, highlightthickness=0)
+
+        # Atualiza botão Word
+        if self.gerar_word.get():
+            for widget in self.word_widgets:
+                widget.config(bg=color_active)
+            self.word_button.config(relief=SOLID, bd=3, highlightbackground=border_active, highlightthickness=2)
+        else:
+            for widget in self.word_widgets:
+                widget.config(bg=color_inactive)
+            self.word_button.config(relief=SOLID, bd=2, highlightthickness=0)
+
     def setup_drag_drop(self):
         """Configura funcionalidade de drag & drop"""
         self.drop_frame.drop_target_register(DND_FILES)

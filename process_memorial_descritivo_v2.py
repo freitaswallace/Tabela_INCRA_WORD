@@ -594,10 +594,7 @@ def create_word_file(table_data, output_path):
     print(f"\n📝 Criando arquivo Word: {output_path}")
     
     doc = Document()
-    
-    heading = doc.add_heading('Memorial Descritivo - Tabela de Vértices', level=1)
-    heading.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    
+
     data_rows = table_data.get('data', [])
     num_rows = 2 + len(data_rows)
     num_cols = 8

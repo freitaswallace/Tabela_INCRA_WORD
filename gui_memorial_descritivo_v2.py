@@ -168,11 +168,11 @@ class MemorialGUI_V2:
         """Cria todos os widgets da interface - Design Profissional"""
 
         # Container principal com Canvas e Scrollbar
-        container = Frame(self.root, bg=self.colors['bg_main'])
+        container = Frame(self.root, bg=self.colors['bg'])
         container.pack(fill=BOTH, expand=True)
 
         # Canvas para permitir scroll
-        canvas = Canvas(container, bg=self.colors['bg_main'], highlightthickness=0)
+        canvas = Canvas(container, bg=self.colors['bg'], highlightthickness=0)
         canvas.pack(side=LEFT, fill=BOTH, expand=True)
 
         # Scrollbar profissional
@@ -183,7 +183,7 @@ class MemorialGUI_V2:
         canvas.configure(yscrollcommand=scrollbar.set)
 
         # Frame principal dentro do canvas
-        main_frame = Frame(canvas, bg=self.colors['bg_main'], padx=40, pady=30)
+        main_frame = Frame(canvas, bg=self.colors['bg'], padx=40, pady=30)
         canvas_window = canvas.create_window((0, 0), window=main_frame, anchor=NW)
 
         # Função para atualizar o scroll quando o conteúdo mudar
@@ -206,7 +206,7 @@ class MemorialGUI_V2:
         self.main_frame = main_frame
 
         # ===== CABEÇALHO PROFISSIONAL =====
-        header_frame = Frame(main_frame, bg=self.colors['bg_main'])
+        header_frame = Frame(main_frame, bg=self.colors['bg'])
         header_frame.pack(fill=X, pady=(0, 35))
 
         # Título com ícone
@@ -214,7 +214,7 @@ class MemorialGUI_V2:
                            text="📋  Memorial Descritivo INCRA",
                            font=('Segoe UI', 28, 'bold'),
                            fg=self.colors['primary'],
-                           bg=self.colors['bg_main'])
+                           bg=self.colors['bg'])
         title_label.pack(anchor=CENTER)
 
         # Subtítulo
@@ -222,7 +222,7 @@ class MemorialGUI_V2:
                               text="Sistema Profissional de Processamento Automatizado",
                               font=('Segoe UI', 13),
                               fg=self.colors['text_light'],
-                              bg=self.colors['bg_main'])
+                              bg=self.colors['bg'])
         subtitle_label.pack(anchor=CENTER, pady=(8, 0))
 
         # Linha separadora
@@ -404,17 +404,17 @@ class MemorialGUI_V2:
         self.log("👉 Escolha como deseja trabalhar acima", 'info')
 
         # ===== BOTÕES PARA ABRIR ARQUIVOS (inicialmente ocultos) =====
-        self.results_frame = Frame(main_frame, bg=self.colors['bg_main'])
+        self.results_frame = Frame(main_frame, bg=self.colors['bg'])
         # Não adiciona ao pack ainda - aparece após processamento
 
         results_title = Label(self.results_frame,
                             text="✨  Arquivos Gerados",
                             font=('Segoe UI', 18, 'bold'),
                             fg=self.colors['success'],
-                            bg=self.colors['bg_main'])
+                            bg=self.colors['bg'])
         results_title.pack(anchor=W, pady=(0, 15))
 
-        results_buttons = Frame(self.results_frame, bg=self.colors['bg_main'])
+        results_buttons = Frame(self.results_frame, bg=self.colors['bg'])
         results_buttons.pack(fill=X)
 
         self.btn_abrir_excel = ttk.Button(results_buttons,

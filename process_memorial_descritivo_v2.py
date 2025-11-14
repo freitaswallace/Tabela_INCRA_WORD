@@ -761,16 +761,22 @@ def create_pdf_file(table_data, output_path):
 
     # Adiciona dados
     for row in data_rows:
-        table_content.append([
-            row.get('ordem', ''),
-            row.get('codigo', ''),
-            row.get('azimute', ''),
-            row.get('distancia', ''),
-            row.get('longitude', ''),
-            row.get('latitude', ''),
-            row.get('altitude', ''),
-            row.get('confrontacoes', '')
-        ])
+        # Verifica se row é uma lista (modo normal) ou dicionário (modo INCRA)
+        if isinstance(row, list):
+            # Formato lista: já vem na ordem correta
+            table_content.append(row)
+        else:
+            # Formato dicionário: precisa extrair as chaves
+            table_content.append([
+                row.get('ordem', ''),
+                row.get('codigo', ''),
+                row.get('azimute', ''),
+                row.get('distancia', ''),
+                row.get('longitude', ''),
+                row.get('latitude', ''),
+                row.get('altitude', ''),
+                row.get('confrontacoes', '')
+            ])
 
     # Cria tabela
     pdf_table = Table(table_content, colWidths=[

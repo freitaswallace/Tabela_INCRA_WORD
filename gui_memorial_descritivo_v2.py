@@ -1117,7 +1117,18 @@ def main():
 
     # Maximiza janela após criação dos widgets
     root.update_idletasks()
-    root.state('zoomed')
+
+    # Tenta maximizar usando diferentes métodos (compatibilidade cross-platform)
+    try:
+        root.state('zoomed')  # Windows
+    except:
+        try:
+            root.attributes('-zoomed', True)  # Alternativa para algumas versões
+        except:
+            # Fallback: maximiza manualmente
+            screen_width = root.winfo_screenwidth()
+            screen_height = root.winfo_screenheight()
+            root.geometry(f'{screen_width}x{screen_height}+0+0')
 
     root.mainloop()
 

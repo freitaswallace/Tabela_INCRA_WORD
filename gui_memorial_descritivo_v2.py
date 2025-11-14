@@ -61,6 +61,8 @@ class MemorialGUI_V2:
         self.prenotacao = StringVar()
         self.api_key = StringVar()
         self.modo_operacao = StringVar(value="normal")  # "normal" ou "incra"
+        self.submodo_incra = StringVar(value="paginas")  # "ia" ou "paginas"
+        self.paginas_incra = StringVar()  # Páginas do documento INCRA
         self.status_text = StringVar(value="Aguardando...")
         self.progress_value = IntVar(value=0)
         self.processing = False
@@ -88,6 +90,9 @@ class MemorialGUI_V2:
         
         # Configurar drag & drop (apenas para modo normal)
         self.setup_drag_drop()
+
+        # Inicializar visual dos botões de submodo
+        self.update_submodo_buttons()
     
     def setup_style(self):
         """Configura estilo moderno e minimalista"""
@@ -315,13 +320,80 @@ class MemorialGUI_V2:
                                          text="  🏛️ Busca por Prenotação INCRA  ",
                                          padding="25")
 
-        incra_info = ttk.Label(self.incra_frame,
-                              text="Digite o número da prenotação\n(exemplo: 229885 ou 00229885)",
-                              foreground='#000000', font=('Arial', 14))
-        incra_info.pack(anchor=W, pady=(0, 15))
+        # ===== TOGGLE: IA vs Páginas =====
+        toggle_frame = Frame(self.incra_frame, bg='#FFFFFF')
+        toggle_frame.pack(fill=X, pady=(0, 20))
 
+        toggle_label = Label(toggle_frame,
+                            text="Método de Detecção:",
+                            font=('Arial', 14, 'bold'),
+                            fg=self.colors['text'],
+                            bg='#FFFFFF')
+        toggle_label.pack(anchor=W, pady=(0, 10))
+
+        # Container dos botões de toggle
+        toggle_buttons = Frame(toggle_frame, bg='#FFFFFF')
+        toggle_buttons.pack(fill=X)
+
+        # Botão "Por Páginas"
+        self.btn_paginas = Frame(toggle_buttons, bg='#E3E5E8', relief=SOLID, bd=2, cursor='hand2')
+        self.btn_paginas.pack(side=LEFT, fill=BOTH, expand=True, padx=(0, 5))
+
+        paginas_inner = Frame(self.btn_paginas, bg='#E3E5E8', padx=15, pady=10)
+        paginas_inner.pack(fill=BOTH, expand=True)
+
+        paginas_icon = Label(paginas_inner, text="📄", font=('Segoe UI', 20), bg='#E3E5E8')
+        paginas_icon.pack(side=LEFT, padx=(0, 10))
+
+        paginas_label = Label(paginas_inner, text="Por Páginas",
+                             font=('Segoe UI', 12, 'bold'),
+                             fg=self.colors['text'], bg='#E3E5E8')
+        paginas_label.pack(side=LEFT)
+
+        # Botão "Por IA"
+        self.btn_ia = Frame(toggle_buttons, bg='#E3E5E8', relief=SOLID, bd=2, cursor='hand2')
+        self.btn_ia.pack(side=LEFT, fill=BOTH, expand=True, padx=(5, 0))
+
+        ia_inner = Frame(self.btn_ia, bg='#E3E5E8', padx=15, pady=10)
+        ia_inner.pack(fill=BOTH, expand=True)
+
+        ia_icon = Label(ia_inner, text="🤖", font=('Segoe UI', 20), bg='#E3E5E8')
+        ia_icon.pack(side=LEFT, padx=(0, 10))
+
+        ia_label = Label(ia_inner, text="Por IA (Automático)",
+                        font=('Segoe UI', 12, 'bold'),
+                        fg=self.colors['text'], bg='#E3E5E8')
+        ia_label.pack(side=LEFT)
+
+        # Bind de cliques para toggle
+        def toggle_paginas(event=None):
+            self.submodo_incra.set("paginas")
+            self.update_submodo_buttons()
+
+        def toggle_ia(event=None):
+            self.submodo_incra.set("ia")
+            self.update_submodo_buttons()
+
+        self.btn_paginas.bind('<Button-1>', toggle_paginas)
+        paginas_inner.bind('<Button-1>', toggle_paginas)
+        paginas_icon.bind('<Button-1>', toggle_paginas)
+        paginas_label.bind('<Button-1>', toggle_paginas)
+
+        self.btn_ia.bind('<Button-1>', toggle_ia)
+        ia_inner.bind('<Button-1>', toggle_ia)
+        ia_icon.bind('<Button-1>', toggle_ia)
+        ia_label.bind('<Button-1>', toggle_ia)
+
+        # Armazena referências
+        self.paginas_widgets = [self.btn_paginas, paginas_inner, paginas_icon, paginas_label]
+        self.ia_widgets = [self.btn_ia, ia_inner, ia_icon, ia_label]
+
+        # Separador
+        ttk.Separator(self.incra_frame, orient=HORIZONTAL).pack(fill=X, pady=15)
+
+        # ===== PRENOTAÇÃO =====
         prenotacao_frame = ttk.Frame(self.incra_frame)
-        prenotacao_frame.pack(fill=X)
+        prenotacao_frame.pack(fill=X, pady=(0, 15))
 
         prenotacao_label = ttk.Label(prenotacao_frame, text="Número da Prenotação:",
                                     font=('Arial', 16, 'bold'))
@@ -330,6 +402,42 @@ class MemorialGUI_V2:
         prenotacao_entry = ttk.Entry(prenotacao_frame, textvariable=self.prenotacao,
                                      font=('Arial', 18), justify='center')
         prenotacao_entry.pack(fill=X, pady=(2, 0), ipady=15)
+
+        # ===== CAMPOS DE PÁGINAS (visíveis apenas no modo "paginas") =====
+        self.paginas_fields_frame = Frame(self.incra_frame, bg='#FFFFFF')
+
+        # Linha informativa
+        info_label = Label(self.paginas_fields_frame,
+                          text="📌 Digite os números das páginas separados por vírgula",
+                          font=('Arial', 11),
+                          fg=self.colors['text_secondary'],
+                          bg='#FFFFFF')
+        info_label.pack(anchor=W, pady=(0, 10))
+
+        # Campo de páginas
+        paginas_input_frame = Frame(self.paginas_fields_frame, bg='#FFFFFF')
+        paginas_input_frame.pack(fill=X)
+
+        paginas_input_label = Label(paginas_input_frame,
+                                   text="Páginas do Documento INCRA:",
+                                   font=('Arial', 14, 'bold'),
+                                   fg=self.colors['text'],
+                                   bg='#FFFFFF')
+        paginas_input_label.pack(anchor=W, pady=(0, 8))
+
+        paginas_entry = ttk.Entry(paginas_input_frame,
+                                 textvariable=self.paginas_incra,
+                                 font=('Arial', 14),
+                                 justify='center')
+        paginas_entry.pack(fill=X, ipady=8)
+
+        # Exemplo
+        exemplo_label = Label(paginas_input_frame,
+                            text="Exemplo: 1,2,4,7",
+                            font=('Arial', 10, 'italic'),
+                            fg=self.colors['text_secondary'],
+                            bg='#FFFFFF')
+        exemplo_label.pack(anchor=W, pady=(5, 0))
         
         # Mostra frame inicial (Normal)
         self.normal_frame.pack(fill=BOTH, expand=True)
@@ -536,6 +644,38 @@ class MemorialGUI_V2:
                 widget.config(bg=color_inactive)
             self.word_button.config(relief=SOLID, bd=2, highlightthickness=0)
 
+    def update_submodo_buttons(self):
+        """Atualiza visual dos botões de submodo INCRA e mostra/esconde campos"""
+        # Cor para não selecionado (cinza claro)
+        color_inactive = '#E3E5E8'
+        # Cor para selecionado (azul claro)
+        color_active = '#D4E8FF'
+        border_active = '#5865F2'
+
+        # Atualiza botão "Por Páginas"
+        if self.submodo_incra.get() == "paginas":
+            for widget in self.paginas_widgets:
+                widget.config(bg=color_active)
+            self.btn_paginas.config(relief=SOLID, bd=3, highlightbackground=border_active, highlightthickness=2)
+            # Mostra campos de páginas
+            self.paginas_fields_frame.pack(fill=X, pady=(15, 0))
+        else:
+            for widget in self.paginas_widgets:
+                widget.config(bg=color_inactive)
+            self.btn_paginas.config(relief=SOLID, bd=2, highlightthickness=0)
+
+        # Atualiza botão "Por IA"
+        if self.submodo_incra.get() == "ia":
+            for widget in self.ia_widgets:
+                widget.config(bg=color_active)
+            self.btn_ia.config(relief=SOLID, bd=3, highlightbackground=border_active, highlightthickness=2)
+            # Esconde campos de páginas
+            self.paginas_fields_frame.pack_forget()
+        else:
+            for widget in self.ia_widgets:
+                widget.config(bg=color_inactive)
+            self.btn_ia.config(relief=SOLID, bd=2, highlightthickness=0)
+
     def setup_drag_drop(self):
         """Configura funcionalidade de drag & drop"""
         self.drop_frame.drop_target_register(DND_FILES)
@@ -718,6 +858,31 @@ class MemorialGUI_V2:
                                    icon='warning')
                 return False
 
+            # Validação para modo "Por Páginas"
+            if self.submodo_incra.get() == "paginas":
+                if not self.paginas_incra.get():
+                    messagebox.showerror("⚠️ Atenção",
+                                       "Por favor, especifique as páginas a serem extraídas!\n\n"
+                                       "Exemplo: 1,2,4,7",
+                                       icon='warning')
+                    return False
+
+                # Valida formato das páginas
+                try:
+                    paginas_str = self.paginas_incra.get()
+                    paginas_list = [int(p.strip()) for p in paginas_str.split(',') if p.strip()]
+                    if not paginas_list:
+                        raise ValueError("Nenhuma página válida")
+                    if any(p < 1 for p in paginas_list):
+                        raise ValueError("Número de página inválido")
+                except ValueError as e:
+                    messagebox.showerror("⚠️ Atenção",
+                                       "Formato de páginas inválido!\n\n"
+                                       "Use números separados por vírgula.\n"
+                                       "Exemplo: 1,2,4,7",
+                                       icon='warning')
+                    return False
+
         if not self.gerar_excel.get() and not self.gerar_word.get():
             messagebox.showwarning("⚠️ Atenção",
                                  "Selecione pelo menos um tipo de arquivo!\n\n"
@@ -806,9 +971,37 @@ class MemorialGUI_V2:
                 # Registra arquivo .pdf para deletar depois
                 self.arquivos_temporarios.append(str(pdf_path))
 
-                self.update_progress(40, "Extraindo dados...")
-                self.log("📊 Extraindo Memorial do INCRA...", 'incra')
-                self.table_data = extrair_memorial_incra(pdf_path, api_key)
+                # Verifica submodo: IA ou Páginas
+                if self.submodo_incra.get() == "paginas":
+                    # Modo Manual - Extração por Páginas
+                    paginas_str = self.paginas_incra.get()
+
+                    if not paginas_str:
+                        raise Exception("Por favor, especifique as páginas a serem extraídas!")
+
+                    self.update_progress(35, "Extraindo páginas selecionadas...")
+                    self.log(f"📄 Extraindo páginas: {paginas_str}", 'info')
+
+                    # Importa a função de extração de páginas
+                    from process_memorial_descritivo_v2 import extrair_paginas_pdf
+
+                    # Extrai as páginas específicas
+                    pdf_paginas = extrair_paginas_pdf(pdf_path, paginas_str)
+                    self.log(f"✅ Páginas extraídas com sucesso!", 'success')
+
+                    # Registra o PDF de páginas para deletar depois
+                    self.arquivos_temporarios.append(str(pdf_paginas))
+
+                    # Usa o PDF com páginas selecionadas para extração
+                    self.update_progress(40, "Extraindo dados das páginas...")
+                    self.log("📊 Extraindo Memorial das páginas selecionadas...", 'incra')
+                    self.table_data = extract_table_from_pdf(str(pdf_paginas), api_key)
+
+                else:
+                    # Modo IA - Detecção Automática (fluxo original)
+                    self.update_progress(40, "Extraindo dados (IA)...")
+                    self.log("🤖 Extraindo Memorial do INCRA com IA...", 'incra')
+                    self.table_data = extrair_memorial_incra(pdf_path, api_key)
 
                 # Usa o diretório que já foi criado pela função copiar_para_downloads
                 output_dir = pdf_path.parent

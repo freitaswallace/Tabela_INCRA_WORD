@@ -28,6 +28,7 @@ try:
     from docx.enum.text import WD_ALIGN_PARAGRAPH
     from PIL import Image
     from pdf2image import convert_from_path
+    from PyPDF2 import PdfReader, PdfWriter
 except ImportError as e:
     print(f"❌ Erro: Biblioteca necessária não encontrada - {e}")
     print("\n📦 Instale as dependências com:")
@@ -342,6 +343,69 @@ def converter_tiff_para_pdf(tiff_path: Path) -> Path:
             
     except Exception as e:
         print(f"❌ Erro ao converter TIFF: {e}")
+        raise
+
+
+def extrair_paginas_pdf(pdf_path: Path, paginas_str: str) -> Path:
+    """
+    Extrai páginas específicas de um PDF e cria um novo PDF com apenas essas páginas
+
+    Args:
+        pdf_path: Path do arquivo PDF original
+        paginas_str: String com números de páginas separados por vírgula (ex: "1,2,4,7")
+
+    Returns:
+        Path do novo PDF criado com as páginas selecionadas
+    """
+    print(f"\n📄 Extraindo páginas específicas do PDF...")
+
+    try:
+        # Parse da string de páginas
+        paginas_list = [int(p.strip()) for p in paginas_str.split(',') if p.strip()]
+
+        if not paginas_list:
+            raise ValueError("Nenhuma página especificada")
+
+        # Ordena as páginas
+        paginas_list.sort()
+
+        print(f"  📋 Páginas selecionadas: {', '.join(map(str, paginas_list))}")
+
+        # Abre o PDF original
+        reader = PdfReader(str(pdf_path))
+        num_total_paginas = len(reader.pages)
+
+        print(f"  📚 PDF original tem {num_total_paginas} página(s)")
+
+        # Valida se as páginas existem
+        for pagina in paginas_list:
+            if pagina < 1 or pagina > num_total_paginas:
+                raise ValueError(f"Página {pagina} não existe no PDF (total: {num_total_paginas})")
+
+        # Cria um novo PDF com as páginas selecionadas
+        writer = PdfWriter()
+
+        for pagina_num in paginas_list:
+            # PyPDF2 usa índice 0-based, então subtraímos 1
+            page = reader.pages[pagina_num - 1]
+            writer.add_page(page)
+            print(f"  ✓ Página {pagina_num} adicionada")
+
+        # Gera nome do novo arquivo
+        output_path = pdf_path.parent / f"{pdf_path.stem}_paginas_selecionadas.pdf"
+
+        # Salva o novo PDF
+        with open(output_path, 'wb') as output_file:
+            writer.write(output_file)
+
+        print(f"✅ Novo PDF criado: {output_path.name} ({len(paginas_list)} página(s))")
+        return output_path
+
+    except ValueError as e:
+        print(f"❌ Erro ao processar páginas: {e}")
+        raise
+    except Exception as e:
+        print(f"❌ Erro ao extrair páginas: {e}")
         raise
 
 

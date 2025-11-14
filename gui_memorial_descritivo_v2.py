@@ -609,6 +609,20 @@ class MemorialGUI_V2:
                                         cursor='hand2')
         self.btn_abrir_word.pack(side=LEFT, ipady=10, ipadx=20)
 
+        # Separador visual
+        ttk.Separator(self.results_frame, orient=HORIZONTAL).pack(fill=X, pady=20)
+
+        # Botão para limpar e fazer nova operação
+        clear_frame = Frame(self.results_frame, bg=self.colors['bg'])
+        clear_frame.pack(fill=X)
+
+        self.btn_nova_operacao = ttk.Button(clear_frame,
+                                           text="🔄  Limpar e Fazer Nova Operação",
+                                           command=self.clear_all,
+                                           style='Secondary.TButton',
+                                           cursor='hand2')
+        self.btn_nova_operacao.pack(fill=X, ipady=12)
+
     def update_output_buttons(self):
         """Atualiza visual dos botões de seleção de saída"""
         # Cor para não selecionado (cinza claro)
@@ -823,14 +837,28 @@ class MemorialGUI_V2:
         self.root.update_idletasks()
     
     def clear_all(self):
-        """Limpa todos os campos"""
+        """Limpa todos os campos e reseta a interface"""
         self.pdf_path.set("")
         self.prenotacao.set("")
+        self.paginas_incra.set("")
         self.progress_value.set(0)
         self.status_text.set("Aguardando...")
         self.update_drop_frame(False)
         self.table_data = None
-        self.log("Interface limpa. Pronto para novo processamento.", 'info')
+
+        # Limpa caminhos dos arquivos gerados
+        self.excel_gerado = None
+        self.word_gerado = None
+
+        # Esconde o frame de resultados
+        self.results_frame.pack_forget()
+
+        # Reseta checkboxes de saída para desmarcado
+        self.gerar_excel.set(False)
+        self.gerar_word.set(False)
+        self.update_output_buttons()
+
+        self.log("🔄 Interface limpa. Pronto para novo processamento.", 'success')
     
     def validate_inputs(self):
         """Valida entradas antes de processar"""

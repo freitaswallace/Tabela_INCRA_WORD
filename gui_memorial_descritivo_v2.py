@@ -321,18 +321,16 @@ class MemorialGUI_V2:
                                          padding="25")
 
         # ===== TOGGLE: IA vs Páginas =====
-        toggle_frame = Frame(self.incra_frame, bg='#FFFFFF')
+        toggle_frame = ttk.Frame(self.incra_frame)
         toggle_frame.pack(fill=X, pady=(0, 20))
 
-        toggle_label = Label(toggle_frame,
-                            text="Método de Detecção:",
-                            font=('Arial', 14, 'bold'),
-                            fg=self.colors['text'],
-                            bg='#FFFFFF')
+        toggle_label = ttk.Label(toggle_frame,
+                                text="Método de Detecção:",
+                                font=('Arial', 14, 'bold'))
         toggle_label.pack(anchor=W, pady=(0, 10))
 
         # Container dos botões de toggle
-        toggle_buttons = Frame(toggle_frame, bg='#FFFFFF')
+        toggle_buttons = ttk.Frame(toggle_frame)
         toggle_buttons.pack(fill=X)
 
         # Botão "Por Páginas"
@@ -404,25 +402,22 @@ class MemorialGUI_V2:
         prenotacao_entry.pack(fill=X, pady=(2, 0), ipady=15)
 
         # ===== CAMPOS DE PÁGINAS (visíveis apenas no modo "paginas") =====
-        self.paginas_fields_frame = Frame(self.incra_frame, bg='#FFFFFF')
+        self.paginas_fields_frame = ttk.Frame(self.incra_frame)
 
         # Linha informativa
-        info_label = Label(self.paginas_fields_frame,
-                          text="📌 Digite os números das páginas separados por vírgula",
-                          font=('Arial', 11),
-                          fg=self.colors['text_secondary'],
-                          bg='#FFFFFF')
+        info_label = ttk.Label(self.paginas_fields_frame,
+                              text="📌 Digite os números das páginas separados por vírgula",
+                              font=('Arial', 11),
+                              foreground=self.colors['text_secondary'])
         info_label.pack(anchor=W, pady=(0, 10))
 
         # Campo de páginas
-        paginas_input_frame = Frame(self.paginas_fields_frame, bg='#FFFFFF')
+        paginas_input_frame = ttk.Frame(self.paginas_fields_frame)
         paginas_input_frame.pack(fill=X)
 
-        paginas_input_label = Label(paginas_input_frame,
-                                   text="Páginas do Documento INCRA:",
-                                   font=('Arial', 14, 'bold'),
-                                   fg=self.colors['text'],
-                                   bg='#FFFFFF')
+        paginas_input_label = ttk.Label(paginas_input_frame,
+                                        text="Páginas do Documento INCRA:",
+                                        font=('Arial', 14, 'bold'))
         paginas_input_label.pack(anchor=W, pady=(0, 8))
 
         paginas_entry = ttk.Entry(paginas_input_frame,
@@ -432,11 +427,10 @@ class MemorialGUI_V2:
         paginas_entry.pack(fill=X, ipady=8)
 
         # Exemplo
-        exemplo_label = Label(paginas_input_frame,
-                            text="Exemplo: 1,2,4,7",
-                            font=('Arial', 10, 'italic'),
-                            fg=self.colors['text_secondary'],
-                            bg='#FFFFFF')
+        exemplo_label = ttk.Label(paginas_input_frame,
+                                 text="Exemplo: 1,2,4,7",
+                                 font=('Arial', 10, 'italic'),
+                                 foreground=self.colors['text_secondary'])
         exemplo_label.pack(anchor=W, pady=(5, 0))
         
         # Mostra frame inicial (Normal)

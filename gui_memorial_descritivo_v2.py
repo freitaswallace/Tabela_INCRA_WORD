@@ -52,9 +52,11 @@ class MemorialGUI_V2:
     def __init__(self, root):
         self.root = root
         self.root.title("Memorial Descritivo INCRA")
-        self.root.geometry("1100x800")
         self.root.resizable(True, True)
         self.root.configure(bg='#FFFFFF')
+
+        # Maximiza a janela ao abrir
+        self.root.state('zoomed')
         
         # Variáveis
         self.pdf_path = StringVar()

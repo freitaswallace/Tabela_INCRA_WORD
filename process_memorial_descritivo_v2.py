@@ -29,10 +29,15 @@ try:
     from PIL import Image
     from pdf2image import convert_from_path
     from PyPDF2 import PdfReader, PdfWriter
+    from reportlab.lib.pagesizes import letter
+    from reportlab.lib import colors
+    from reportlab.lib.units import mm
+    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph
+    from reportlab.lib.styles import getSampleStyleSheet
 except ImportError as e:
     print(f"❌ Erro: Biblioteca necessária não encontrada - {e}")
     print("\n📦 Instale as dependências com:")
-    print("pip install google-generativeai openpyxl python-docx pillow pdf2image --break-system-packages")
+    print("pip install google-generativeai openpyxl python-docx pillow pdf2image PyPDF2 reportlab --break-system-packages")
     sys.exit(1)
 
 
@@ -722,6 +727,103 @@ def create_word_file(table_data, output_path):
     
     doc.save(output_path)
     print(f"✅ Word criado com sucesso!")
+    return output_path
+
+
+def create_pdf_file(table_data, output_path):
+    """Cria arquivo PDF com a tabela formatada em formato ofício"""
+    print(f"\n📄 Criando arquivo PDF: {output_path}")
+
+    # Formato ofício brasileiro: 216mm x 330mm
+    OFICIO_SIZE = (216*mm, 330*mm)
+
+    doc = SimpleDocTemplate(
+        output_path,
+        pagesize=OFICIO_SIZE,
+        rightMargin=15*mm,
+        leftMargin=15*mm,
+        topMargin=15*mm,
+        bottomMargin=15*mm
+    )
+
+    data_rows = table_data.get('data', [])
+
+    # Prepara dados da tabela
+    table_content = []
+
+    # Linha 1: Cabeçalhos mesclados
+    header_row1 = ['VÉRTICE', '', '', '', 'COORDENADAS GEODÉSICAS', '', '', '']
+    table_content.append(header_row1)
+
+    # Linha 2: Subcabeçalhos
+    header_row2 = ['Ordem', 'Código', 'Azimute', 'Dist.', 'Longitude', 'Latitude', 'Altitude', 'Confrontações']
+    table_content.append(header_row2)
+
+    # Adiciona dados
+    for row in data_rows:
+        table_content.append([
+            row.get('ordem', ''),
+            row.get('codigo', ''),
+            row.get('azimute', ''),
+            row.get('distancia', ''),
+            row.get('longitude', ''),
+            row.get('latitude', ''),
+            row.get('altitude', ''),
+            row.get('confrontacoes', '')
+        ])
+
+    # Cria tabela
+    pdf_table = Table(table_content, colWidths=[
+        15*mm,  # Ordem
+        18*mm,  # Código
+        20*mm,  # Azimute
+        15*mm,  # Dist.
+        28*mm,  # Longitude
+        28*mm,  # Latitude
+        18*mm,  # Altitude
+        44*mm   # Confrontações
+    ])
+
+    # Estilo da tabela
+    style = TableStyle([
+        # Borda externa
+        ('BOX', (0, 0), (-1, -1), 1, colors.black),
+        ('INNERGRID', (0, 0), (-1, -1), 0.5, colors.black),
+
+        # Cabeçalhos em negrito e centralizados
+        ('FONT', (0, 0), (-1, 1), 'Helvetica-Bold', 9),
+        ('ALIGN', (0, 0), (-1, 1), 'CENTER'),
+        ('VALIGN', (0, 0), (-1, 1), 'MIDDLE'),
+
+        # Mesclar células do cabeçalho principal
+        ('SPAN', (0, 0), (3, 0)),  # VÉRTICE
+        ('SPAN', (4, 0), (7, 0)),  # COORDENADAS GEODÉSICAS
+
+        # Fundo cinza para cabeçalhos
+        ('BACKGROUND', (0, 0), (-1, 1), colors.lightgrey),
+
+        # Dados
+        ('FONT', (0, 2), (-1, -1), 'Helvetica', 8),
+        ('ALIGN', (0, 2), (-1, -1), 'CENTER'),
+        ('VALIGN', (0, 2), (-1, -1), 'MIDDLE'),
+
+        # Padding
+        ('TOPPADDING', (0, 0), (-1, -1), 4),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
+        ('LEFTPADDING', (0, 0), (-1, -1), 3),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 3),
+    ])
+
+    pdf_table.setStyle(style)
+
+    # Constrói o PDF
+    elements = [pdf_table]
+    doc.build(elements)
+
+    print(f"✅ PDF criado: {output_path}")
+    print(f"   Formato: Ofício (216mm x 330mm)")
+    print(f"   Linhas: {len(data_rows)}")
+
     return output_path
 
 

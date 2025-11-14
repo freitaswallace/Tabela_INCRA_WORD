@@ -70,6 +70,7 @@ class MemorialGUI_V2:
         # Checkboxes para saída
         self.gerar_excel = BooleanVar(value=False)
         self.gerar_word = BooleanVar(value=False)
+        self.gerar_pdf = BooleanVar(value=False)
 
         # API Key fixa
         self.api_key.set('AIzaSyAdA_GO7cQ0m1ouie4wGwXf4a4SnHKjBh8')
@@ -77,6 +78,7 @@ class MemorialGUI_V2:
         # Caminhos dos arquivos gerados
         self.excel_gerado = None
         self.word_gerado = None
+        self.pdf_gerado = None
 
         # Caminhos dos arquivos temporários para deletar
         self.arquivos_temporarios = []
@@ -464,7 +466,7 @@ class MemorialGUI_V2:
 
         # Botão Excel
         self.excel_button = Frame(buttons_container, bg='#E3E5E8', relief=SOLID, bd=2, cursor='hand2')
-        self.excel_button.pack(side=LEFT, fill=BOTH, expand=True, padx=(0, 10))
+        self.excel_button.pack(side=LEFT, fill=BOTH, expand=True, padx=(0, 5))
 
         excel_inner = Frame(self.excel_button, bg='#E3E5E8', padx=20, pady=15)
         excel_inner.pack(fill=BOTH, expand=True)
@@ -484,7 +486,7 @@ class MemorialGUI_V2:
 
         # Botão Word
         self.word_button = Frame(buttons_container, bg='#E3E5E8', relief=SOLID, bd=2, cursor='hand2')
-        self.word_button.pack(side=LEFT, fill=BOTH, expand=True, padx=(10, 0))
+        self.word_button.pack(side=LEFT, fill=BOTH, expand=True, padx=(5, 5))
 
         word_inner = Frame(self.word_button, bg='#E3E5E8', padx=20, pady=15)
         word_inner.pack(fill=BOTH, expand=True)
@@ -502,6 +504,26 @@ class MemorialGUI_V2:
                          fg=self.colors['text_secondary'], bg='#E3E5E8')
         word_desc.pack(pady=(2, 5))
 
+        # Botão PDF
+        self.pdf_button = Frame(buttons_container, bg='#E3E5E8', relief=SOLID, bd=2, cursor='hand2')
+        self.pdf_button.pack(side=LEFT, fill=BOTH, expand=True, padx=(5, 0))
+
+        pdf_inner = Frame(self.pdf_button, bg='#E3E5E8', padx=20, pady=15)
+        pdf_inner.pack(fill=BOTH, expand=True)
+
+        pdf_icon = Label(pdf_inner, text="📄", font=('Segoe UI', 32), bg='#E3E5E8')
+        pdf_icon.pack(pady=(5, 10))
+
+        pdf_label = Label(pdf_inner, text="Documento PDF",
+                         font=('Segoe UI', 14, 'bold'),
+                         fg=self.colors['text'], bg='#E3E5E8')
+        pdf_label.pack()
+
+        pdf_desc = Label(pdf_inner, text="Formato Ofício",
+                        font=('Segoe UI', 10),
+                        fg=self.colors['text_secondary'], bg='#E3E5E8')
+        pdf_desc.pack(pady=(2, 5))
+
         # Bind de cliques
         def toggle_excel(event=None):
             self.gerar_excel.set(not self.gerar_excel.get())
@@ -509,6 +531,10 @@ class MemorialGUI_V2:
 
         def toggle_word(event=None):
             self.gerar_word.set(not self.gerar_word.get())
+            self.update_output_buttons()
+
+        def toggle_pdf(event=None):
+            self.gerar_pdf.set(not self.gerar_pdf.get())
             self.update_output_buttons()
 
         self.excel_button.bind('<Button-1>', toggle_excel)
@@ -523,9 +549,16 @@ class MemorialGUI_V2:
         word_label.bind('<Button-1>', toggle_word)
         word_desc.bind('<Button-1>', toggle_word)
 
+        self.pdf_button.bind('<Button-1>', toggle_pdf)
+        pdf_inner.bind('<Button-1>', toggle_pdf)
+        pdf_icon.bind('<Button-1>', toggle_pdf)
+        pdf_label.bind('<Button-1>', toggle_pdf)
+        pdf_desc.bind('<Button-1>', toggle_pdf)
+
         # Armazena referências para atualizar cores
         self.excel_widgets = [self.excel_button, excel_inner, excel_icon, excel_label, excel_desc]
         self.word_widgets = [self.word_button, word_inner, word_icon, word_label, word_desc]
+        self.pdf_widgets = [self.pdf_button, pdf_inner, pdf_icon, pdf_label, pdf_desc]
         
         # ===== BOTÕES DE AÇÃO =====
         ttk.Separator(main_frame, orient=HORIZONTAL).pack(fill=X, pady=20)
@@ -606,7 +639,14 @@ class MemorialGUI_V2:
                                         command=self.abrir_word,
                                         style='Success.TButton',
                                         cursor='hand2')
-        self.btn_abrir_word.pack(side=LEFT, ipady=10, ipadx=20)
+        self.btn_abrir_word.pack(side=LEFT, padx=(0, 15), ipady=10, ipadx=20)
+
+        self.btn_abrir_pdf = ttk.Button(results_buttons,
+                                       text="📄  Abrir Documento PDF",
+                                       command=self.abrir_pdf,
+                                       style='Success.TButton',
+                                       cursor='hand2')
+        self.btn_abrir_pdf.pack(side=LEFT, ipady=10, ipadx=20)
 
         # Separador visual
         ttk.Separator(self.results_frame, orient=HORIZONTAL).pack(fill=X, pady=20)
@@ -650,6 +690,16 @@ class MemorialGUI_V2:
             for widget in self.word_widgets:
                 widget.config(bg=color_inactive)
             self.word_button.config(relief=SOLID, bd=2, highlightthickness=0)
+
+        # Atualiza botão PDF
+        if self.gerar_pdf.get():
+            for widget in self.pdf_widgets:
+                widget.config(bg=color_active)
+            self.pdf_button.config(relief=SOLID, bd=3, highlightbackground=border_active, highlightthickness=2)
+        else:
+            for widget in self.pdf_widgets:
+                widget.config(bg=color_inactive)
+            self.pdf_button.config(relief=SOLID, bd=2, highlightthickness=0)
 
     def update_submodo_buttons(self):
         """Atualiza visual dos botões de submodo INCRA e mostra/esconde campos"""
@@ -800,6 +850,13 @@ class MemorialGUI_V2:
         else:
             messagebox.showwarning("Aviso", "Nenhum arquivo Word foi gerado ainda!")
 
+    def abrir_pdf(self):
+        """Abre o arquivo PDF gerado"""
+        if self.pdf_gerado:
+            self.abrir_arquivo(self.pdf_gerado)
+        else:
+            messagebox.showwarning("Aviso", "Nenhum arquivo PDF foi gerado ainda!")
+
     def mostrar_botoes_resultados(self):
         """Mostra os botões para abrir arquivos após processamento"""
         self.results_frame.pack(fill=X, pady=(25, 0))
@@ -848,6 +905,7 @@ class MemorialGUI_V2:
         # Limpa caminhos dos arquivos gerados
         self.excel_gerado = None
         self.word_gerado = None
+        self.pdf_gerado = None
 
         # Esconde o frame de resultados
         self.results_frame.pack_forget()
@@ -855,6 +913,7 @@ class MemorialGUI_V2:
         # Reseta checkboxes de saída para desmarcado
         self.gerar_excel.set(False)
         self.gerar_word.set(False)
+        self.gerar_pdf.set(False)
         self.update_output_buttons()
 
         self.log("🔄 Interface limpa. Pronto para novo processamento.", 'success')
@@ -904,10 +963,10 @@ class MemorialGUI_V2:
                                        icon='warning')
                     return False
 
-        if not self.gerar_excel.get() and not self.gerar_word.get():
+        if not self.gerar_excel.get() and not self.gerar_word.get() and not self.gerar_pdf.get():
             messagebox.showwarning("⚠️ Atenção",
                                  "Selecione pelo menos um tipo de arquivo!\n\n"
-                                 "Marque Excel ou Word (ou ambos).")
+                                 "Marque Excel, Word ou PDF (ou vários).")
             return False
 
         return True
@@ -1049,12 +1108,21 @@ class MemorialGUI_V2:
                 self.log(f"✅ Excel: {excel_path.name}", 'success')
 
             if self.gerar_word.get():
-                self.update_progress(85, "Gerando Word...")
+                self.update_progress(80, "Gerando Word...")
                 word_path = output_dir / f"{prefixo}.docx"
                 create_word_file(self.table_data, str(word_path))
                 self.word_gerado = str(word_path)  # Salva caminho
                 arquivos_gerados.append(f"📝 {word_path.name}")
                 self.log(f"✅ Word: {word_path.name}", 'success')
+
+            if self.gerar_pdf.get():
+                self.update_progress(90, "Gerando PDF...")
+                pdf_path = output_dir / f"{prefixo}.pdf"
+                from process_memorial_descritivo_v2 import create_pdf_file
+                create_pdf_file(self.table_data, str(pdf_path))
+                self.pdf_gerado = str(pdf_path)  # Salva caminho
+                arquivos_gerados.append(f"📄 {pdf_path.name}")
+                self.log(f"✅ PDF: {pdf_path.name}", 'success')
 
             # Limpa arquivos temporários (.tif e .pdf)
             if self.arquivos_temporarios:
@@ -1069,7 +1137,7 @@ class MemorialGUI_V2:
             self.log("="*50, 'success')
 
             # Mostra botões para abrir arquivos
-            if self.excel_gerado or self.word_gerado:
+            if self.excel_gerado or self.word_gerado or self.pdf_gerado:
                 self.root.after(100, self.mostrar_botoes_resultados)
 
             # Mensagem de sucesso

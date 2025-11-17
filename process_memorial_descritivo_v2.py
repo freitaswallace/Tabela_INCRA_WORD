@@ -594,13 +594,26 @@ IMPORTANTE:
 
 
 def create_excel_file(table_data, output_path):
-    """Cria arquivo Excel com a tabela formatada"""
+    """Cria arquivo Excel com a tabela formatada em formato ofício"""
     print(f"\n📊 Criando arquivo Excel: {output_path}")
-    
+
     wb = Workbook()
     ws = wb.active
     ws.title = "Memorial Descritivo"
-    
+
+    # Configura página para formato ofício (216mm x 330mm)
+    ws.page_setup.paperSize = ws.PAPERSIZE_LEGAL  # Legal é o mais próximo do ofício
+    ws.page_setup.orientation = ws.ORIENTATION_PORTRAIT
+    ws.page_setup.fitToPage = True
+    ws.page_setup.fitToWidth = 1
+    ws.page_setup.fitToHeight = 0  # Ajusta altura automaticamente
+
+    # Margens em polegadas (ofício brasileiro)
+    ws.page_margins.left = 0.59  # ~15mm
+    ws.page_margins.right = 0.59  # ~15mm
+    ws.page_margins.top = 0.59  # ~15mm
+    ws.page_margins.bottom = 0.59  # ~15mm
+
     header_font = Font(bold=True, size=11)
     center_alignment = Alignment(horizontal='center', vertical='center')
     border_style = Border(
@@ -609,7 +622,7 @@ def create_excel_file(table_data, output_path):
         top=Side(style='thin'),
         bottom=Side(style='thin')
     )
-    
+
     # Linha 1: Cabeçalhos mesclados
     ws.merge_cells('A1:D1')
     cell_a1 = ws['A1']
@@ -617,14 +630,14 @@ def create_excel_file(table_data, output_path):
     cell_a1.font = header_font
     cell_a1.alignment = center_alignment
     cell_a1.border = border_style
-    
+
     ws.merge_cells('E1:H1')
     cell_e1 = ws['E1']
     cell_e1.value = "SEGMENTO VANTE"
     cell_e1.font = header_font
     cell_e1.alignment = center_alignment
     cell_e1.border = border_style
-    
+
     # Linha 2: Sub-cabeçalhos
     header_row2 = table_data.get('header_row2', [])
     for col_idx, header in enumerate(header_row2, start=1):
@@ -633,7 +646,7 @@ def create_excel_file(table_data, output_path):
         cell.font = header_font
         cell.alignment = center_alignment
         cell.border = border_style
-    
+
     # Linhas 3+: Dados
     data_rows = table_data.get('data', [])
     for row_idx, row_data in enumerate(data_rows, start=3):
@@ -643,26 +656,35 @@ def create_excel_file(table_data, output_path):
             cell.border = border_style
             if col_idx in [1, 5]:
                 cell.alignment = Alignment(horizontal='center', vertical='center')
-    
+
     # Ajusta larguras
     column_widths = {
         'A': 15, 'B': 18, 'C': 18, 'D': 15,
         'E': 15, 'F': 15, 'G': 12, 'H': 30
     }
-    
+
     for col_letter, width in column_widths.items():
         ws.column_dimensions[col_letter].width = width
-    
+
     wb.save(output_path)
-    print(f"✅ Excel criado com sucesso!")
+    print(f"✅ Excel criado com sucesso! (Formato: Ofício)")
     return output_path
 
 
 def create_word_file(table_data, output_path):
-    """Cria arquivo Word com a tabela formatada"""
+    """Cria arquivo Word com a tabela formatada em formato ofício"""
     print(f"\n📝 Criando arquivo Word: {output_path}")
-    
+
     doc = Document()
+
+    # Configura página para formato ofício (216mm x 330mm)
+    section = doc.sections[0]
+    section.page_width = Cm(21.6)   # 216mm
+    section.page_height = Cm(33.0)  # 330mm
+    section.top_margin = Cm(1.5)    # ~15mm
+    section.bottom_margin = Cm(1.5)
+    section.left_margin = Cm(1.5)
+    section.right_margin = Cm(1.5)
 
     data_rows = table_data.get('data', [])
     num_rows = 2 + len(data_rows)
@@ -726,7 +748,7 @@ def create_word_file(table_data, output_path):
                 cell.width = preferred_widths[idx]
     
     doc.save(output_path)
-    print(f"✅ Word criado com sucesso!")
+    print(f"✅ Word criado com sucesso! (Formato: Ofício)")
     return output_path
 
 
